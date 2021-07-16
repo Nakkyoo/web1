@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title> web2 css 박스모델활용</title>
+    <meta charset="utf-8">
+    <style>
+      h1 {
+        text-align: center; font-size:50px;
+        border-bottom:1px solid black;
+        margin:0;
+      }
+      body{
+        font-size:10px;
+        margin:0;
+      }
+      ol {
+        text-align: left; font-size:35px;
+        border-right:1px solid black; padding-left:40px; margin-left:10px;
+        width:200px;
+        margin-top:0
+      }
+      li {
+        margin-left:5px;
+      }
+      #grid{
+        display:grid;
+        grid-template-columns: 260px 1fr;
+      }
+      div{
+        font-size:15px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>WEB</h1>
+    <div id="grid">
+      <ol>
+        <li style="color:gray; margin-bottom:5px;">HTML</li>
+        <li style="color:red; margin-bottom:5px;">CSS</li>
+        <li style="margin-bottom:5px;">JavaScript</li>
+      </ol>
+      <div>
+        <a href="https://namu.wiki/w/CSS" title="css나무위키" ><font size="20px">Cascading Style Sheet</font></a>
+        <p>
+        HTML 등의 마크업 언어로 작성된 문서가 실제로 웹사이트에 표현되는 방법을 정해주는 언어.
+        CSS의 C가 Cascading의 약자인데,<br>
+        이는 상위 요소의 스타일 속성을 자손 요소들에게 상속시켜주는 모습이
+        DOM 트리구조에서 마치 폭포수처럼 내려가는 모습을 닮았기 때문이다.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
