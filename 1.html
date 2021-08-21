@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <input type ="button" value="컨펌시작했다 컨펌끝났다" onclick="func_confirm()"/>
+    <script>
+        function func_confirm(){
+            if(confirm('func_confirm함수가 실행되면,, 이 if 절이 참인지 거짓인지 분간하기전에 confirm메소드부터 실행되는겨'))
+            {
+                alert('확인눌렀고')
+            }
+            else{
+                alert('취소눌렀꼬')
+            }
+        }
+        window.open('http://naver.com');
+
+    </script>
+</body>
+</html>
