@@ -174,16 +174,6 @@ function inputPositionZ(){
         // add subtle ambient lighting
         var ambientLight = new THREE.AmbientLight(0x292929);
         scene.add(ambientLight);
-
-        // var tweenX = new TWEEN.Tween({x:pastPositionX,y:0,z:pastPositionZ}).to({x:positionX,y:0,z:pastPositionZ},4000)        
-        // tweenX.onUpdate(function (object = {
-        //     x: number,
-        //     y:number,
-        //     z:number
-
-        // }, elapsed: number;){})
-            var tweenX = new TWEEN.Tween({x:pastPositionX,y:0,z:pastPositionZ}).to({x:positionX,y:0, z:positionZ },4000)
-
             // add the output of the renderer to the html element
         document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
@@ -252,10 +242,12 @@ function inputPositionZ(){
         function render() {
             
             orbit.update();
-
+            // if(positionX == Container.position.x){
+            //     console.log('딸기')
+            // }
             if (positionX){
-            Container.position.x = positionX;
                 console.log('0')
+                Container.position.x = positionX;
         }
 
             if (positionZ){
