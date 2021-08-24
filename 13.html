@@ -1,26 +1,27 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>web2 css</title>
-  <style>
-    a{
-    border:5px solid red;
-    padding:20px;
-    margin:20px;
-    display:block;
-    width:100px;
-    }
-    h1{
-    border:5px solid red;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
 </head>
 <body>
+    <ul id="target">
+        <li>HTML</li>
+        <li>CSS</li>
+    </ul>
+    <input type="button" onclick="get();" value="get" />
+    <input type="button" onclick="set();" value="set" />
+    <script>
+        function get(){
+            var target = document.getElementById('target');
+            alert(target.innerText);
+        }
+        function set(){
+            var target = document.getElementById('target');
+            target.innerText = "<li>JavaScript Core</li><li>BOM</li><li>DOM</li>";
+        }
+    </script>
 </body>
-<h1>css</h1>
-<a href="https://namu.wiki/w/CSS" title="css나무위키">Cascading Style Sheet</a>
-HTML 등의 마크업 언어로 작성된 문서가 실제로 웹사이트에 표현되는 방법을 정해주는 언어.
-CSS의 C가 Cascading의 약자인데,
-이는 상위 요소의 스타일 속성을 자손 요소들에게 상속시켜주는 모습이
-DOM 트리구조에서 마치 폭포수처럼 내려가는 모습을 닮았기 때문이다.
+</html>
