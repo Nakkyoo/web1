@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>1인칭 camera practice</title>
+    <script type="text/javascript" src="../libs/three.js"></script>
+    <script type="text/javascript" src="../libs/OrbitControls.js"></script>
+    <script type="text/javascript" src="../libs/dat.gui.js"></script>
+    <script src="jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="../libs/FirstPersonControls.js"></script>
+    <script src="2.JS"></script>
+
+    <style> 
+        body {
+            /* set margin to 0 and overflow to hidden, to go fullscreen */
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+<!-- 
+    <script>
+        var settings = {
+            "url": "http://203.253.128.161:7579/Mobius/boongx2/data/la",
+            "method": "GET",
+            "timeout": 0,
+            "headers": {
+                "Accept": "application/json",
+                "X-M2M-RI": "12345",
+                "X-M2M-Origin": "SOrigin"
+            },
+        };
+    </script> -->
+
+</head>
+<body>
+
+    <!-- Div which will hold the Output -->
+    <div id="WebGL-output">
+    </div>
+
+    <script type="text/javascript">
+        var dataX;
+        var pastDataX;
+        var dataZ;
+        var pastDataZ;
+        var regex = /[^0-9]/g;	
+        var orbit; 
+        var rcCar;
+        var rotationSpeed = 0;
+        var rotationSpeed2 = 0;
+        var Container;
+        var velocityX =10;
+        var velocityZ =10;
+        var centerVertices;
+//배열정보 2개
+var ii=0;
+var jj=0;
+var testArrayZ = 
+    [0,15,30,45,60,
+    75,90,105,120,135,
+    150,165,180,195,210,
+    225,240,255,270,285,
+    300,315,330,345,360,
+    375,390,405,420,435,
+    450,465,480,495,510,
+    525,540,555,570,585,
+    600,615,630,645,660,
+    675,690,705,720,735,
+    750,765,780,795,810,
+    825,840,855,870,885,
+    900,915,930,945,960,
+    975,990,1005,1020,1035,
+    1050,1065,1080,1095,1110,
+    1125,1140,1155,1170,1185,
+    1200,1215,1230,1245,1260,
+    1275,1290,1305,1320,1335,
+    1350,1365,1380,1395,1410,
+    1425,1440,1455,1470,1485,
+    1500,1515,1530,1545,1560,
+    1575,1590,1605,1620,1635,
+    1650,1665,1680,1695,1710,
+    1725,1740,1755,1770,1785,
+    1800,1815,1830,1845,1860,
+    1875,1890,1905,1920,1935,
+    1950,1965,1980,1995,2010,
+    2025,2040,2055,2070,2085,
+    2100,2115,2130,2145,
+    2145,2145,2145,2145,2145,
+    2145,2145,2145,2145,2145,
+    2145,2145,2145,2145,2145,
+    2145,2145,2145,2145,2145,
+    2145,2145,2145,2145,2145,
+    2145,2145,2145,2145,2145,
+    2145,2145,2145,2145,2145,
+    2145,2145,2145,2145,2145,
+    2145,2145,2145,2145,2145,
+    2145,2145,2145,2145,2145,
+    2145,2145,2145,2145,2145,
+    2145,2145,2145,2145,2145,
+    2145,2145,2145,2145,2145,
+    2145,2145,2145,2145,2145,
+    2145,2145,2145,2145,2145,
+    2145,2145,2145,2145,2145,
+    2145,2145,2145,2145,2145,
+    2145,2145,2145,2145,2145,
+    2145,2145,2145,2145,2145,
+    2145,2145,2145,2145,2145,
+    2145,2145,2145,2145,2145,
+    2145,2145,2145,2145,2145,
+    2145,2145,2145,2145,2145,
+    2145,2145,2145,2145,2145,
+    2145,2145,2145,2145,2145,
+    2145,2145,2145,2145,2145,
+    2145,2145,2145,2145,2145,
+    2130,2115,2100,2085,2070,
+    2055,2040,2025,2010,1995,
+    1980,1965,1950,1935,1920,
+    1905,1890,1875,1860,1845,
+    1830,1815,1800,1785,1770,
+    1755,1740,1725,1710,1695,
+    1680,1665,1650,1635,1620,
+    1605,1590,1575,1560,1545,
+    1530,1515,1500,1485,1470,
+    1455,1440,1425,1410,1395,
+    1380,1365,1350,1335,1320,
+    1305,1290,1275,1260,1245,
+    1230,1215,1200,1185,1170,
+    1155,1140,1125,1110,1095,
+    1080,1065,1050,1035,1020,
+    1005,990,975,960,945,
+    930,915,900,885,870,
+    855,855,855,855,855,
+    855,855,855,855,855,
+    855,855,855,855,855,
+    855,855,855,855,855,
+    855,855,855,855,855,
+    855,855,855,855,855,
+    855,855,855,855,855,
+    855,855,855,855,855,
+    855,855,855,855,855,
+    855,855,855,855,855,
+    855,855,855,855,855,
+    855,855,855,855,855,
+    855,855,855,855,855,
+    855,855,855,855,855,
+    855,855,855,855,855,
+    855,855,855,855,855,
+    855,855,855,855,855,
+    855,
+    855,855,855,855,855,
+    855,855,855,855,855,
+    855,855,855,855,
+
+    870,885,900,915,
+    930,945,960,975,990,
+    1005,1020,1035,1050,1065,
+    1080,1095,1110,1125,1140,
+    1155,1170,1185,1200,1215,
+    1230,1245,1260,1275,1290,
+    1305,1320,1335,1350,1365,
+    1380,1395,1410,1425,1440,
+    1455,1470,1485,1500,1515,
+    1530,1545,1560,1575,1590,
+    1605,1620,1635,1650,1665,
+    1680,1695,1710,1725,1740,
+    1755,1770,1785,1800,1815,
+    1830,1845,1860,1875,1890,
+    1905,1920,1935,1950,1965,
+    1980,1995,2010,2025,2040,
+    2055,2070,2085,2100,2115,
+    2130,2145,2160,2175,2190,
+    2205,2220,2235,2250,2265,
+    2280,2295,2310,2325,2340,
+    2355,2370,2385,2400,2415,
+    2430,2445,2460,2475,2490,
+    2505,2520,2535,2550,2565,
+    2580,2595,2610,2625,2640,
+    2655,2670,2685,2700,2715,
+    2730,2745,2760,2775,2790,
+    2805,2820,2835,2850,2865,
+    2880,2895,2910,2925,2940,
+    2955,2970,2985,3000,
+    ]
+var testArrayX1 = 
+    [0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,
+    0,15,30,45,60,
+    75,90,105,120,135,
+    150,165,180,295,210,
+    225,240,255,270,285,
+    300,315,330,345,360,
+    375,390,405,420,435,//?590
+    450,465,480,495,510,
+    525,540,555,570,585,
+    600,615,630,645,660,
+    675,690,705,720,735,
+    750,765,780,795,810,
+    825,840,855,870,885,
+    900,915,930,945,960,
+    975,990,1005,1020,1035,
+    1050,1065,1080,1095,1110,
+    1125,1140,1155,1170,1185,
+    1200,1215,1230,1245,1260,
+    1275,1290,1305,1320,1335,
+    1350,1365,1380,1395,1410,
+    1425,1440,1455,1470,1485,
+    1500,1515,1530,1545,1560,
+    1575,1590,1605,1620,1635,
+    1650,1665,1680,1695,1710,
+    1725,1740,1755,1770,1785,
+    1800,1815,1830,1845,1860,
+    1875,1890,1905,1920,1935,
+    1950,1965,1980,1995,2010,
+    2010,2010,2010,2010,2010,
+    2010,2010,2010,2010,2010,
+    2010,2010,2010,2010,2010,
+    2010,2010,2010,2010,2010,
+    2010,2010,2010,2010,2010,
+    2010,2010,2010,2010,2010,
+    2010,2010,2010,2010,2010,
+    2010,2010,2010,2010,2010,
+    2010,2010,2010,2010,2010,
+    2010,2010,2010,2010,2010,
+    2010,2010,2010,2010,2010,
+    2010,2010,2010,2010,2010,
+    2010,2010,2010,2010,2010,
+    2010,2010,2010,2010,2010,
+    2010,2010,2010,2010,2010,
+    2010,2010,2010,2010,2010,
+    2010,2010,2010,2010,2010,
+    2025,2040,2055,2070,2085,
+    2100,2115,2130,2145,2160,
+    2175,2190,2205,2220,2235,
+    2250,2265,2280,2295,2310,
+    2325,2340,2355,2370,2385,
+    2400,2415,2430,2445,2460,
+    2475,2490,2505,2520,2535,
+    2550,2565,2580,2595,2610,
+    2625,2640,2655,2670,2685,
+    2700,2715,2730,2745,2760,
+    2775,2790,2805,2820,2835,
+    2850,2865,2880,2895,2910,
+    2925,2940,2955,2970,2985,
+    3000,3015,3030,3045,3060,
+    3075,3090,3105,3120,3135,
+    3150,3165,3180,3195,3210,
+    3225,3240,3255,3270,3285,
+    3300,
+    3315,3330,3345,3360,3375,
+    3390,3405,3420,3435,3450,
+    3465,3480,3495,3510,
+
+
+
+
+
+
+
+
+    3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510,3510,
+    3510,3510,3510,3510
+    ]
+
+    function download(){
+        if(ii < testArrayX1.length){
+            pastDataX = dataX;
+            dataX = testArrayX1[ii];
+            dataX = dataX*2;
+            ii += 1;
+        }
+
+        if(jj < testArrayZ.length){
+            pastDataZ = dataZ;
+            dataZ = testArrayZ[jj];
+            dataZ = dataZ*2;
+            jj +=1;
+        }
+        console.log(dataX,dataZ,pastDataX,pastDataZ)
+    }
+
+        // function download(){
+        //     $.ajax(settings).done(function (response) {
+        //         dataX = response['m2m:cin'].con.split(',')[0].replace(regex, "");;
+        //         dataZ = response['m2m:cin'].con.split(',')[1].replace(regex, "");;
+        //         dataX = dataX*2;
+        //         dataZ = dataZ*2;
+        //         console.log(dataX,dataZ)
+        //     })
+        // ;}
+
+        setInterval(download,300);
+
+
+
+        function leftTurn (){
+                    rotationSpeed = 0.06545;
+                    setTimeout(function(){
+                        rotationSpeed = 0;
+                        Container.rotation.y = Math.PI * 0.5;
+                    },380); //1480에서 더 세밀하게 조율 들어가면 좋겠당..
+        };
+
+        function leftTurn2 (){
+                    rotationSpeed = 0.06545;
+                    setTimeout(function(){
+                        rotationSpeed = 0;
+                        Container.rotation.y = Math.PI; 
+                    },380); //1480에서 더 세밀하게 조율 들어가면 좋겠당..
+        };
+
+        function leftTurn3 (){
+                    rotationSpeed = 0.06545;
+                    setTimeout(function(){
+                        rotationSpeed = 0;
+                        Container.rotation.y = Math.PI * 1.5;
+                    },380); //1480에서 더 세밀하게 조율 들어가면 좋겠당..
+        };
+
+        function leftTurn4 (){
+                    rotationSpeed = 0.06545;
+                    setTimeout(function(){
+                        rotationSpeed = 0;
+                        Container.rotation.y = 0;
+                    },380); //1480에서 더 세밀하게 조율 들어가면 좋겠당..
+        };
+
+        function rightTurn (){
+            rotationSpeed = -0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = Math.PI * 0.5;
+            },380);
+        };
+
+        function rightTurn2 (){
+            rotationSpeed = -0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = Math.PI;
+            },380);
+        };
+
+        function rightTurn3 (){
+            rotationSpeed = -0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = Math.PI * 1.5;
+            },380);
+        };
+        function rightTurn4 (){
+            rotationSpeed = -0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = 0;
+            },380);
+        };
+
+        function turnAround(){
+            rotationSpeed = 0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = 0;
+            },760);            
+        }
+
+        function turnAround2(){
+            rotationSpeed = 0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = Math.PI * 0.5;
+            },760);            
+        }
+        function turnAround3(){
+            rotationSpeed = 0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = Math.PI;
+            },760);            
+        }
+        function turnAround4(){
+            rotationSpeed = 0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = Math.PI * 1.5;
+            },760);            
+        }
+
+        function cleftTurn (){
+                    rotationSpeed2 = 0.06545;
+                    setTimeout(function(){
+                        rotationSpeed2 = 0;
+                        camera.rotation.y = Math.PI * 0.5;
+                    },380); //1480에서 더 세밀하게 조율 들어가면 좋겠당..
+        };
+
+        function cleftTurn2 (){
+                    rotationSpeed2 = 0.06545;
+                    setTimeout(function(){
+                        rotationSpeed2 = 0;
+                        camera.rotation.y = Math.PI; 
+                    },380); //1480에서 더 세밀하게 조율 들어가면 좋겠당..
+        };
+
+        function cleftTurn3 (){
+                    rotationSpeed2 = 0.06545;
+                    setTimeout(function(){
+                        rotationSpeed2 = 0;
+                        camera.rotation.y = Math.PI * 1.5;
+                    },380); //1480에서 더 세밀하게 조율 들어가면 좋겠당..
+        };
+
+        function cleftTurn4 (){
+                    rotationSpeed2 = 0.06545;
+                    setTimeout(function(){
+                        rotationSpeed2 = 0;
+                        camera.rotation.y = 0;
+                    },380); //1480에서 더 세밀하게 조율 들어가면 좋겠당..
+        };
+
+        function crightTurn (){
+            rotationSpeed2 = -0.06545;
+            setTimeout(function(){
+                rotationSpeed2 = 0;
+                camera.rotation.y = Math.PI * 0.5;
+            },380);
+        };
+
+        function crightTurn2 (){
+            rotationSpeed2 = -0.06545;
+            setTimeout(function(){
+                rotationSpeed2 = 0;
+                camera.rotation.y = Math.PI;
+            },380);
+        };
+
+        function crightTurn3 (){
+            rotationSpeed2 = -0.06545;
+            setTimeout(function(){
+                rotationSpeed2 = 0;
+                camera.rotation.y = Math.PI * 1.5;
+            },380);
+        };
+        function crightTurn4 (){
+            rotationSpeed2 = -0.06545;
+            setTimeout(function(){
+                rotationSpeed2 = 0;
+                camera.rotation.y = 0;
+            },380);
+        };
+
+        function cturnAround(){
+            rotationSpeed2 = 0.06545;
+            setTimeout(function(){
+                rotationSpeed2 = 0;
+                camera.rotation.y = 0;
+            },760);            
+        }
+
+        function cturnAround2(){
+            rotationSpeed2 = 0.06545;
+            setTimeout(function(){
+                rotationSpeed2 = 0;
+                camera.rotation.y = Math.PI * 0.5;
+            },760);            
+        }
+        function cturnAround3(){
+            rotationSpeed2 = 0.06545;
+            setTimeout(function(){
+                rotationSpeed2 = 0;
+                camera.rotation.y = Math.PI;
+            },760);            
+        }
+        function cturnAround4(){
+            rotationSpeed2 = 0.06545;
+            setTimeout(function(){
+                rotationSpeed2 = 0;
+                camera.rotation.y = Math.PI * 1.5;
+            },760);            
+        }
+
+        function init() {
+
+            // 기본적인 scene 넣구
+            var scene = new THREE.Scene();
+
+            // renederer 넣고
+            var renderer = new THREE.WebGLRenderer();
+            renderer.setClearColor(new THREE.Color(0x000, 1.0));
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            // ground 깔고
+            var planeGeometry = new THREE.PlaneGeometry(7324, 6264);
+            var planeMaterial = new THREE.MeshLambertMaterial({color: 0x808080});
+            var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+            // rotate and position the plane
+            plane.rotation.x = -0.5 * Math.PI;
+            plane.position.x = 3472;
+            plane.position.y = 0;
+            plane.position.z = 3102;
+            // add the plane to the scene
+            scene.add(plane);
+
+            // 이 기준 축은 추후 삭제 예정
+            var axes = new THREE.AxisHelper(1000);
+            scene.add(axes);
+        
+            // 1인칭 카메라 위치 잡아주고
+            var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100000);
+            camera.position.set(-30,60,-250);
+
+
+            // 원점 기준 북쪽 벽 만들구
+            var northWallGeometry = new THREE.BoxGeometry(8324,1000,500)
+            var northWallMaterial = new THREE.MeshLambertMaterial({color:0x9B1003});
+            var northWall = new THREE.Mesh(northWallGeometry,northWallMaterial);
+            northWall.rotation.x = -0.5 * Math.PI;
+            northWall.position.x = 3472;
+            northWall.position.z = 6734;
+            northWall.position.y = 250;
+            scene.add(northWall)
+
+            // 원점 기준 남쪽 벽 만들고
+            var southWallGeometry = new THREE.BoxGeometry(8324,1000,500)
+            var southWallMaterial = new THREE.MeshLambertMaterial({color:0x040273});
+            var southWall = new THREE.Mesh(southWallGeometry,southWallMaterial);
+            southWall.rotation.x = -0.5 * Math.PI;
+            southWall.position.x = 3472;
+            southWall.position.z = -530;
+            southWall.position.y = 250;
+            scene.add(southWall)
+
+            // 원점 기준 서쪽 벽 만들고
+            var westWallGeometry = new THREE.BoxGeometry(500,6264,500)
+            var westWallMaterial = new THREE.MeshLambertMaterial({color:0x9c9723});
+            var westWall = new THREE.Mesh(westWallGeometry,westWallMaterial);
+            westWall.rotation.x = -0.5 * Math.PI;
+            westWall.position.z = 3102;
+            westWall.position.y = 250;
+            westWall.position.x = 7384;
+            scene.add(westWall)
+
+            // 원점 기준 동쪽 벽 만들고
+            var eastWallGeometry = new THREE.BoxGeometry(500,6264,500)
+            var eastWallMaterial = new THREE.MeshLambertMaterial({color:0x235347});
+            var eastWall = new THREE.Mesh(eastWallGeometry,eastWallMaterial);
+            eastWall.rotation.x = -0.5 * Math.PI;
+            eastWall.position.z = 3102;
+            eastWall.position.y = 250;
+            eastWall.position.x = -440;
+            scene.add(eastWall)
+
+            // 랩실 1 2 만들것
+            var LAB1Geometry = new THREE.BoxGeometry(6564,1650,500)
+            var LAB1Material = new THREE.MeshLambertMaterial();
+            LAB1Material.transparent = true;
+            LAB1Material.opacity = 0.7;
+            var LAB1 = new THREE.Mesh(LAB1Geometry,LAB1Material);
+            LAB1.rotation.x = -0.5 * Math.PI;
+            LAB1.position.z = 795;
+            LAB1.position.y = 250;
+            LAB1.position.x = 3472;
+            scene.add(LAB1)
+            var LAB2 = new THREE.Mesh(LAB1Geometry,LAB1Material);
+            LAB2.rotation.x = -0.5 * Math.PI;
+            LAB2.position.x = 3472;
+            LAB2.position.y = 250;
+            LAB2.position.z = 5409;
+            scene.add(LAB2)
+
+            //엘베 1 2 만들 것             
+            var Elevator1Geometry = new THREE.BoxGeometry(3286,2204,500)
+            var Elevator1 = new THREE.Mesh( Elevator1Geometry,LAB1Material);
+            Elevator1.rotation.x = -0.5 * Math.PI;
+            Elevator1.position.x = 1833;
+            Elevator1.position.z = 3102;
+            Elevator1.position.y = 250;
+            scene.add(Elevator1)
+            var Elevator2Geometry = new THREE.BoxGeometry(2516,2204,500)            
+            var Elevator2 = new THREE.Mesh( Elevator2Geometry,LAB1Material);
+            Elevator2.rotation.x = -0.5 * Math.PI;
+            Elevator2.position.x = 5496;
+            Elevator2.position.y = 250;
+            Elevator2.position.z = 3102;
+            scene.add(Elevator2)
+
+
+            // 탑뷰로 내리 쬐어주는 직선광 하나 깔아주고
+            var directionalLight = new THREE.DirectionalLight(0xffffff, 1.4);
+            directionalLight.position.set(3600, 4000, 3900);
+            scene.add(directionalLight);
+
+
+            // 주변광 하나 깔아주고
+            var ambientLight = new THREE.AmbientLight(0x383838);
+            scene.add(ambientLight);
+
+            // 3D rc Car 모델과 camera를 담기 위한 컨테이너 하나 만들고
+            Container = new THREE.Object3D();
+            rcCar = Car();
+            rcCar.rotation.x = -0.5 * Math.PI;
+            rcCar.rotation.z = -0.5 * Math.PI;
+            Container.add(rcCar);
+            // Container.add(camera);
+            scene.add(Container);
+
+            // 오르빗 시스템 돌리고
+            orbit = new THREE.OrbitControls(camera, renderer.domElement);
+
+            // add the output of the renderer to the html element
+            document.getElementById("WebGL-output").appendChild(renderer.domElement);
+
+            render();
+
+            function render() {
+                orbit.update();
+                if(dataX > Container.position.x){
+                    Container.position.x += velocityX;
+                    if(Container.rotation.y ==0)leftTurn();
+                    if(Container.rotation.y == Math.PI)rightTurn();
+                    if(Container.rotation.y == Math.PI*1.5)turnAround2();
+                }
+                else if(dataX < Container.position.x){
+                    Container.position.x -= velocityX;
+                    if(Container.rotation.y == Math.PI)leftTurn3();
+                    if(Container.rotation.y == 0)rightTurn3();
+                    if(Container.rotation.y == Math.PI*0.5)turnAround4();
+                }
+                if(dataZ > Container.position.z){
+                    Container.position.z += velocityZ;
+                    if(Container.rotation.y == Math.PI*1.5)leftTurn4();
+                    if(Container.rotation.y == Math.PI*0.5)rightTurn4();
+                    if(Container.rotation.y == Math.PI)turnAround();
+                }
+                else if(dataZ < Container.position.z){
+                    Container.position.z -= velocityZ;
+                    if(Container.rotation.y == Math.PI*0.5)leftTurn2();
+                    if(Container.rotation.y == Math.PI*1.5)rightTurn2();
+                    if(Container.rotation.y == 0)turnAround3();
+                }
+                if(rotationSpeed){
+                    Container.rotation.y += rotationSpeed;
+                }
+                if(pastDataX > camera.position.x){
+                    camera.position.x += velocityX;
+                    if(camera.rotation.y ==0)cleftTurn();
+                    if(camera.rotation.y == Math.PI)crightTurn();
+                    if(camera.rotation.y == Math.PI*1.5)cturnAround2();
+                }
+                else if(pastDataX < camera.position.x){
+                    camera.position.x -= velocityX;
+                    if(camera.rotation.y == Math.PI)cleftTurn3();
+                    if(camera.rotation.y == 0)crightTurn3();
+                    if(camera.rotation.y == Math.PI*0.5)cturnAround4();
+                }
+                if(pastDataZ > camera.position.z){
+                    camera.position.z += velocityZ;
+                    if(camera.rotation.y == Math.PI*1.5)cleftTurn4();
+                    if(camera.rotation.y == Math.PI*0.5)crightTurn4();
+                    if(camera.rotation.y == Math.PI)cturnAround();
+                }
+                else if(pastDataZ < camera.position.z){
+                    camera.position.z -= velocityZ;
+                    if(camera.rotation.y == Math.PI*0.5)cleftTurn2();
+                    if(camera.rotation.y == Math.PI*1.5)crightTurn2();
+                    if(camera.rotation.y == 0)cturnAround3();
+                }
+                if(rotationSpeed2){
+                    camera.rotation.y += rotationSpeed2;
+                }
+
+                // if (camera instanceof THREE.Camera) {
+                //     camera.lookAt(new THREE.Vector3(rcCar.position.x, 0, rcCar.position.z));
+                // }
+                requestAnimationFrame(render);
+                renderer.render(scene, camera);
+                }
+
+                // 자동차 조립
+                function Car () {
+                    var Car = new THREE.Group();
+
+                    var backWheel = new THREE.Mesh( 
+                        new THREE.BoxGeometry(12,33,12), new THREE.MeshLambertMaterial({color:0x333333}))
+                    backWheel.position.z = 6;
+                    backWheel.position.x = -18;
+                    Car.add(backWheel);
+
+                    var frontWheel = new THREE.Mesh(
+                        new THREE.BoxGeometry(12,33,12), new THREE.MeshLambertMaterial({color:0x333333}))
+                    frontWheel.position.z = 6;
+                    frontWheel.position.x = 18;
+                    Car.add(frontWheel);
+
+                    var mainbody = new THREE.Mesh(
+                        new THREE.BoxGeometry(60,40,15),
+                        new THREE.MeshLambertMaterial({color:0xa52523})
+                    )
+                    mainbody.position.z = 12;
+                    Car.add(mainbody)
+
+            
+                    var cabinMaterial = [
+                    new THREE.MeshLambertMaterial({ color: 0xffffff }),
+                    new THREE.MeshLambertMaterial({ color: 0xffffff }),
+                    new THREE.MeshLambertMaterial({ color: 0xffffff }),
+                    new THREE.MeshLambertMaterial({ color: 0xffffff }),
+                    new THREE.MeshLambertMaterial({ color: 0xffffff }), // top
+                    new THREE.MeshLambertMaterial({ color: 0xffffff }) // bottom
+                    ];
+
+                    var cabin = new THREE.SceneUtils.createMultiMaterialObject(
+                        new THREE.BoxGeometry(33, 24, 12),cabinMaterial 
+                    );
+                    cabin.position.x = -6;
+                    cabin.position.z = 25.5;
+                    Car.add(cabin);
+
+                    // 카메라를 위한 점 하나 잡고
+                    var centerVerticesMaterial = new THREE.SpriteMaterial({color:0xff0000});
+                    centerVertices = new THREE.Sprite(centerVerticesMaterial);
+                    centerVertices.position.set(0,100,0);
+                    Car.add(centerVertices);
+                    return Car;    
+            }
+        }
+    
+    window.onload = init
+</script>
+</body>
+</html>

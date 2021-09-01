@@ -1,0 +1,181 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		
+		<title> WebGL </title>
+		<style>
+			body { margin: 0; }
+			canvas { display: block; }
+		</style>
+	</head>
+	<body>
+		<script type="module">
+			import * as THREE from './js/three.js/build/three.module.js';
+			import { OrbitControls } from './js/three.js/examples/jsm/controls/OrbitControls.js';
+			import { GLTFLoader } from './js/three.js/examples/jsm/loaders/GLTFLoader.js';
+			import { DRACOLoader } from './js/three.js/examples/jsm/loaders/DRACOLoader.js';
+			import { GUI } from './js/three.js/examples/jsm/libs/dat.gui.module.js';
+			var container;
+			var car_model,ship;
+			container = document.createElement( 'div' );
+			document.body.appendChild( container );
+			var scene = new THREE.Scene();
+			//scene.background = new THREE.Color( 0xcce0ff);
+			scene.fog = new THREE.Fog( 0xffffff, 500, 10000 );
+			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+			//****directional light****//
+			
+			//adding light to the scene
+			var light = new THREE.DirectionalLight( 0xffffff, 1.0 );
+			scene.add( light );
+			light.position.set(0,10,0);
+			light.castShadow=true;
+			light.shadow.camera.near = 1;
+			light.shadow.camera.far = 5;
+			light.shadow.camera.right = 10;
+			light.shadow.camera.left = - 10;
+			light.shadow.camera.top	= 10;
+			light.shadow.camera.bottom = - 10;
+			light.shadow.mapSize.width = 1024;
+			light.shadow.mapSize.height = 1024;
+			//adding additional light
+			/*var light2 = new THREE.DirectionalLight( 0xffffff, 10.0,5000 );
+			scene.add( light2 );
+			light2.position.set(5,10,0);
+			*/
+			//var helper = new THREE.CameraHelper( light.shadow.camera );
+			//scene.add( helper );
+			//scene.add( directionalLight );
+			
+			//*******point light********//
+			/*
+			var point_light = new THREE.PointLight( 0xffffff, 10,50 );
+			point_light.position.set( 0, 2, 5 );
+			scene.add( point_light );
+			*/
+			
+			var ambientLight = new THREE.AmbientLight(0xffffff, 10.2);
+			scene.add(ambientLight);
+			var renderer = new THREE.WebGLRenderer({ antialias: true });
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			//document.body.appendChild( renderer.domElement );
+			container.appendChild( renderer.domElement );
+			
+			//Instantiate a loader
+			var loader =  new GLTFLoader();
+
+			//Optional: Provide a DRACOLoader instance to decode compressed mesh data
+			var dracoLoader = new DRACOLoader();
+			dracoLoader.setDecoderPath( 'js/three.js/examples/js/libs/draco/' );
+			loader.setDRACOLoader( dracoLoader );
+
+			camera.position.set(5,1.15,0);
+			
+			var line_material = new THREE.LineBasicMaterial( {
+				color: 0x000000,
+				linewidth: 1,
+				linecap: 'round', //ignored by WebGLRenderer
+				linejoin:  'round' //ignored by WebGLRenderer
+			} );
+			//***************************///////////
+			var mixer;
+			var action=undefined;
+			loader.load(
+				// resource URL
+				'models/gltf/ufo.glb',
+				// called when the resource is loaded
+				function ( gltf )
+				{
+					ship=gltf;
+					car_model = gltf.scene;
+					scene.add(car_model);
+					console.log(gltf);
+					//change_color();
+					car_model.castShadow=true;
+					//trying to apply textures.
+					//var objects=gltf.scene.children
+					//objects.forEach(apply_texture);
+					//console.log(objects);
+					//creating textures
+					
+					
+					//animation clips - regarding
+					mixer=new THREE.AnimationMixer(ship.scene);
+					var clips=ship.animations;
+					var clip=THREE.AnimationClip.findByName( clips, 'Animation' );
+					action = mixer.clipAction( clip );
+					action.play();
+					
+					
+					
+				},
+				// called while loading is progressing
+				function ( xhr ) 
+				{
+
+					console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+
+				},
+				// called when loading has errors
+				function ( error ) 
+				{
+
+					console.log( 'An error happened' );
+
+				}
+			);			
+			
+			var groundTexture = new THREE.TextureLoader().load( "models/texture/floor.png" );
+			groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
+			groundTexture.repeat.set( 10000, 10000 );
+			groundTexture.anisotropy = 64;
+			groundTexture.encoding = THREE.sRGBEncoding;
+
+			var groundMaterial = new THREE.MeshStandardMaterial( { map: groundTexture } );
+
+			var mesh = new THREE.Mesh( new THREE.PlaneBufferGeometry( 10000, 10000 ), groundMaterial );
+			mesh.position.y =-3;
+			mesh.rotation.x = - Math.PI / 2;
+			mesh.receiveShadow = true;
+			scene.add( mesh );
+			
+			
+			
+			var clock = new THREE.Clock();
+			
+			var controls = new OrbitControls( camera, renderer.domElement );
+			//controls.maxPolarAngle = Math.PI * (0.5/1.185);
+			var animate = function () 
+			{
+			
+				var dt = clock.getDelta();
+				if ( mixer ) mixer.update( dt );
+				requestAnimationFrame( animate );
+				
+				renderer.render( scene, camera );
+			};
+			//*******************floor****************************//
+			/*
+			var grid = new THREE.GridHelper( 100, 40, 0x000000, 0x000000 );
+			//grid.material=line_material;
+			grid.material.opacity = 0.1;
+			//grid.material.depthWrite = false;
+			grid.material.transparent = true;
+			scene.add( grid );
+			console.log(grid);
+			*/
+			window.addEventListener( 'resize', onWindowResize, false );
+			function onWindowResize()
+			{
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+			}
+			animate();
+		</script>
+	</body>
+</html>
