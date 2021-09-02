@@ -43,8 +43,8 @@
         var rcCar;
         var rotationSpeed = 0;
         var Container;
-        var velocityX =15;
-        var velocityZ =15;
+        var velocityX =0.5;
+        var velocityZ =0.5;
 
         // function download(){
         //     $.ajax(settings).done(function (response) {
@@ -57,7 +57,7 @@
         // };
 // 0 15 30 45 60 75 90 05 30 45 60
 
-            // setInterval(download,100);
+            setInterval(download,1000);
             function createMesh(geom, imageFile) {
             var texture = THREE.ImageUtils.loadTexture("../assets/textures/general/" + imageFile);
             var mat = new THREE.MeshPhongMaterial();
@@ -193,7 +193,7 @@
 
             var camControls = new THREE.FirstPersonControls(camera);
             camControls.lookSpeed = 0.3;
-            camControls.movementSpeed = 900;
+            camControls.movementSpeed = 30;
             camControls.noFly = true;
             camControls.lookVertical = true;
             camControls.constrainVertical = true;
