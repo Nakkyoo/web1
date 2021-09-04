@@ -14,6 +14,9 @@
     <script src="building높이660.js"></script>
     <script src="light.js"></script>
     <script src="car.js"></script>
+    <script src="../libs/OBJLoader.js"></script>
+    <script src="../libs/MTLLoader.js"></script>
+
     <style> 
         body {
             /* set margin to 0 and overflow to hidden, to go fullscreen */
@@ -60,6 +63,11 @@
         var velocityX =0.5;
         var velocityZ =0.5;
         var centerVertices;
+        var loaderOBJ = new THREE.OBJLoader();
+        var mtlLoader = new THREE.MTLLoader();
+        var tesla;
+        var mesh;
+        var teslaController;
 //배열정보 2개
 
 
@@ -79,7 +87,7 @@
                     rotationSpeed = 0.06545;
                     setTimeout(function(){
                         rotationSpeed = 0;
-                        container.rotation.y = Math.PI * 0.5;
+                        mesh.rotation.y = Math.PI * 0.5;
                     },380); 
         };
 
@@ -87,7 +95,7 @@
                     rotationSpeed = 0.06545;
                     setTimeout(function(){
                         rotationSpeed = 0;
-                        container.rotation.y = Math.PI; 
+                        mesh.rotation.y = Math.PI; 
                     },380); 
         };
 
@@ -95,7 +103,7 @@
                     rotationSpeed = 0.06545;
                     setTimeout(function(){
                         rotationSpeed = 0;
-                        container.rotation.y = Math.PI * 1.5;
+                        mesh.rotation.y = Math.PI * 1.5;
                     },380); 
         };
 
@@ -103,76 +111,76 @@
                     rotationSpeed = 0.06545;
                     setTimeout(function(){
                         rotationSpeed = 0;
-                        container.rotation.y = 0;
+                        mesh.rotation.y = 0;
                     },380); 
         };
 
         function rightTurn (){
             rotationSpeed = -0.06545;
-            container.rotation.y =container.rotation.y + rotationSpeed;
+            mesh.rotation.y =mesh.rotation.y + rotationSpeed;
             setTimeout(function(){
                 rotationSpeed = 0;
-                container.rotation.y = Math.PI * 0.5;
+                mesh.rotation.y = Math.PI * 0.5;
             },380);
         };
 
         function rightTurn2 (){
             rotationSpeed = -0.06545;
-            container.rotation.y =container.rotation.y + rotationSpeed;
+            mesh.rotation.y =mesh.rotation.y + rotationSpeed;
             setTimeout(function(){
                 rotationSpeed = 0;
-                container.rotation.y = Math.PI;
+                mesh.rotation.y = Math.PI;
             },380);
         };
 
         function rightTurn3 (){
             rotationSpeed = -0.06545;
-            container.rotation.y =container.rotation.y + rotationSpeed;
+            mesh.rotation.y =mesh.rotation.y + rotationSpeed;
             setTimeout(function(){
                 rotationSpeed = 0;
-                container.rotation.y = Math.PI * 1.5;
+                mesh.rotation.y = Math.PI * 1.5;
             },380);
         };
         function rightTurn4 (){
             rotationSpeed = -0.06545;
-            container.rotation.y =container.rotation.y + rotationSpeed;
+            mesh.rotation.y =mesh.rotation.y + rotationSpeed;
             setTimeout(function(){
                 rotationSpeed = 0;
-                container.rotation.y = 0;
+                mesh.rotation.y = 0;
             },380);
         };
 
         function turnAround(){
             rotationSpeed = 0.06545;
-            container.rotation.y =container.rotation.y + rotationSpeed;
+            mesh.rotation.y =mesh.rotation.y + rotationSpeed;
             setTimeout(function(){
                 rotationSpeed = 0;
-                container.rotation.y = 0;
+                mesh.rotation.y = 0;
             },760);            
         }
 
         function turnAround2(){
             rotationSpeed = 0.06545;
-            container.rotation.y =container.rotation.y + rotationSpeed;
+            mesh.rotation.y =mesh.rotation.y + rotationSpeed;
             setTimeout(function(){
                 rotationSpeed = 0;
-                container.rotation.y = Math.PI * 0.5;
+                mesh.rotation.y = Math.PI * 0.5;
             },760);            
         }
         function turnAround3(){
             rotationSpeed = 0.06545;
-            container.rotation.y =container.rotation.y + rotationSpeed;
+            mesh.rotation.y =mesh.rotation.y + rotationSpeed;
             setTimeout(function(){
                 rotationSpeed = 0;
-                container.rotation.y = Math.PI;
+                mesh.rotation.y = Math.PI;
             },760);            
         }
         function turnAround4(){
             rotationSpeed = 0.06545;
-            container.rotation.y =container.rotation.y + rotationSpeed;
+            mesh.rotation.y =mesh.rotation.y + rotationSpeed;
             setTimeout(function(){
                 rotationSpeed = 0;
-                container.rotation.y = Math.PI * 1.5;
+                mesh.rotation.y = Math.PI * 1.5;
             },760);            
         }
 /////////////////////// for camera//////////////////////////
@@ -270,6 +278,7 @@
             },760);            
         }
 
+
         function init() {
 
             // 기본적인 scene 넣구
@@ -296,12 +305,13 @@
             camera.position.set(-30,60,-250);
 
             // 3D rc Car 모델 담기 위한 컨테이너 하나 만들고
-            container = new THREE.Object3D();
-            rcCar = Car();
-            rcCar.rotation.x = -0.5 * Math.PI;
-            rcCar.rotation.z = -0.5 * Math.PI;
-            container.add(rcCar);
-            scene.add(container);
+            // container.rotation.y = Math.PI;
+            // tesla.position.y = 10;
+            // rcCar = Car();
+            // rcCar.rotation.x = -0.5 * Math.PI;
+            // rcCar.rotation.z = -0.5 * Math.PI;
+            // container.add(rcCar);
+            // scene.add(container);
 
             // 3D rc Car 모델 담기 위한 컨테이너 하나 만들고
             containerForCamera = new THREE.Object3D();
@@ -310,73 +320,99 @@
 
             // 오르빗 시스템 돌리고
             orbit = new THREE.OrbitControls(camera, renderer.domElement);
+            var mesh;
 
+            loaderOBJ = new THREE.OBJLoader();
+            tesla = new Object();
+            loaderOBJ.load('C4.obj',
+             function ( obj ){
+                obj.children.forEach(function (child) {
+                // child.material = material;
+                child.geometry.computeFaceNormals();
+                child.geometry.computeVertexNormals();
+            });
+                mesh = obj;
+
+                obj.scale.set(60,60,60);
+                 obj.position.set(60,60,60);
+                 obj.rotation.set(0, Math.PI, 0); 
+                 scene.add(obj);
+                 // tesla.obj = obj;
+            }
+         );
             // add the output of the renderer to the html element
             document.getElementById("WebGL-output").appendChild(renderer.domElement);
-
             render();
 
             function render() {
                 orbit.update();
-                if(dataX > container.position.x){
-                    container.position.x += velocityX;
-                    if(container.rotation.y ==0)leftTurn();
-                    if(container.rotation.y == Math.PI)rightTurn();
-                    // if(container.rotation.y == Math.PI*1.5)turnAround2();
-                }
-                else if(dataX < container.position.x){
-                    container.position.x -= velocityX;
-                    if(container.rotation.y == Math.PI)leftTurn3();
-                    if(container.rotation.y == 0)rightTurn3();
-                    // if(container.rotation.y == Math.PI*0.5)turnAround4();
-                }
-                if(dataZ > container.position.z){
-                    container.position.z += velocityZ;
-                    if(container.rotation.y == Math.PI*1.5)leftTurn4();
-                    if(container.rotation.y == Math.PI*0.5)rightTurn4();
-                    // if(container.rotation.y == Math.PI)turnAround();
-                }
-                else if(dataZ < container.position.z){
-                    container.position.z -= velocityZ;
-                    if(container.rotation.y == Math.PI*0.5)leftTurn2();
-                    if(container.rotation.y == Math.PI*1.5)rightTurn2();
-                    // if(container.rotation.y == 0)turnAround3();
-                }
-                if(rotationSpeed){
-                    container.rotation.y += rotationSpeed;
-                }
-                /////////////////////////////////////////
+                if (mesh) {
+                // mesh.rotation.y += 0.006;
+                // mesh.rotation.x += 0.006;
+                // mesh.position.z += 0.006;
+                // mesh.position.x += 12;
 
-                if(past2DataX > containerForCamera.position.x){
-                    containerForCamera.position.x += velocityX;
-                    if(containerForCamera.rotation.y ==0)cleftTurn();
-                    if(containerForCamera.rotation.y == Math.PI)crightTurn();
-                    // if(containerForCamera.rotation.y == Math.PI*1.5)cturnAround2();
-                }
-                else if(past2DataX < containerForCamera.position.x){
-                    containerForCamera.position.x -= velocityX;
-                    if(containerForCamera.rotation.y == Math.PI)cleftTurn3();
-                    if(containerForCamera.rotation.y == 0)crightTurn3();
-                    // if(containerForCamera.rotation.y == Math.PI*0.5)cturnAround4();
-                }
-                if(past2DataZ > containerForCamera.position.z){
-                    containerForCamera.position.z += velocityZ;
-                    if(containerForCamera.rotation.y == Math.PI*1.5)cleftTurn4();
-                    if(containerForCamera.rotation.y == Math.PI*0.5)crightTurn4();
-                    // if(containerForCamera.rotation.y == Math.PI)cturnAround();
-                }
-                else if(past2DataZ < containerForCamera.position.z){
-                    containerForCamera.position.z -= velocityZ;
-                    if(containerForCamera.rotation.y == Math.PI*0.5)cleftTurn2();
-                    if(containerForCamera.rotation.y == Math.PI*1.5)crightTurn2();
-                    // if(containerForCamera.rotation.y == 0)cturnAround3();
-                }
-                if(rotationSpeed2){
-                    containerForCamera.rotation.y += rotationSpeed2;
-                }
+                  if(dataX > mesh.position.x){
+                      mesh.position.x += velocityX;
+                      if(mesh.rotation.y ==0)leftTurn();
+                      if(mesh.rotation.y == Math.PI)rightTurn();
+                      // if(mesh.rotation.y == Math.PI*1.5)turnAround2();
+                  }
+                  else if(dataX < mesh.position.x){
+                      mesh.position.x -= velocityX;
+                      if(mesh.rotation.y == Math.PI)leftTurn3();
+                      if(mesh.rotation.y == 0)rightTurn3();
+                      // if(mesh.rotation.y == Math.PI*0.5)turnAround4();
+                  }
+                  if(dataZ > mesh.position.z){
+                      mesh.position.z += velocityZ;
+                      if(mesh.rotation.y == Math.PI*1.5)leftTurn4();
+                      if(mesh.rotation.y == Math.PI*0.5)rightTurn4();
+                      // if(mesh.rotation.y == Math.PI)turnAround();
+                  }
+                  else if(dataZ < mesh.position.z){
+                      mesh.position.z -= velocityZ;
+                      if(mesh.rotation.y == Math.PI*0.5)leftTurn2();
+                      if(mesh.rotation.y == Math.PI*1.5)rightTurn2();
+                      // if(mesh.rotation.y == 0)turnAround3();
+                  }
+                  if(rotationSpeed){
+                      mesh.rotation.y += rotationSpeed;
+                  }
+            }              
+
+                ///////////////////////////////////////
+
+                // if(past2DataX > containerForCamera.position.x){
+                //     containerForCamera.position.x += velocityX;
+                //     if(containerForCamera.rotation.y ==0)cleftTurn();
+                //     if(containerForCamera.rotation.y == Math.PI)crightTurn();
+                //     // if(containerForCamera.rotation.y == Math.PI*1.5)cturnAround2();
+                // }
+                // else if(past2DataX < containerForCamera.position.x){
+                //     containerForCamera.position.x -= velocityX;
+                //     if(containerForCamera.rotation.y == Math.PI)cleftTurn3();
+                //     if(containerForCamera.rotation.y == 0)crightTurn3();
+                //     // if(containerForCamera.rotation.y == Math.PI*0.5)cturnAround4();
+                // }
+                // if(past2DataZ > containerForCamera.position.z){
+                //     containerForCamera.position.z += velocityZ;
+                //     if(containerForCamera.rotation.y == Math.PI*1.5)cleftTurn4();
+                //     if(containerForCamera.rotation.y == Math.PI*0.5)crightTurn4();
+                //     // if(containerForCamera.rotation.y == Math.PI)cturnAround();
+                // }
+                // else if(past2DataZ < containerForCamera.position.z){
+                //     containerForCamera.position.z -= velocityZ;
+                //     if(containerForCamera.rotation.y == Math.PI*0.5)cleftTurn2();
+                //     if(containerForCamera.rotation.y == Math.PI*1.5)crightTurn2();
+                //     // if(containerForCamera.rotation.y == 0)cturnAround3();
+                // }
+                // if(rotationSpeed2){
+                //     containerForCamera.rotation.y += rotationSpeed2;
+                // }
 
                  if (camera instanceof THREE.Camera) {
-                     camera.lookAt(new THREE.Vector3(rcCar.position.x, 0, rcCar.position.z));
+                    //  camera.lookAt(new THREE.Vector3(rcCar.position.x, 0, rcCar.position.z));
                 }
                 requestAnimationFrame(render);
                 renderer.render(scene, camera);

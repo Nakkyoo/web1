@@ -1,0 +1,300 @@
+ <!DOCTYPE html>
+<html>
+<head>
+    <title>Example 02.07 - Cameras</title>
+    <script type="text/javascript" src="../libs/three.js"></script>
+    <script type="text/javascript" src="../libs/OrbitControls.js"></script>
+    <script type="text/javascript" src="../libs/dat.gui.js"></script>
+    <script src="jquery-3.6.0.min.js"></script>
+    <script src="1.JS"></script>
+    <script src="asphalt.js"></script>
+    <script src="yellowRoadLine.js"></script>
+    <script src="whiteRoadLine.js"></script>
+    <script src="crossLine.js"></script>
+    <script src="building.js"></script>
+    <script src="light.js"></script>
+    <script src="car.js"></script>
+    <style> 
+        body {
+            /* set margin to 0 and overflow to hidden, to go fullscreen */
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+    <!-- <script>
+        var settings = {
+            "url": "http://203.253.128.161:7579/Mobius/boongx2/data/la",
+            "method": "GET",
+            "timeout": 0,
+            "headers": {
+                "Accept": "application/json",
+                "X-M2M-RI": "12345",
+                "X-M2M-Origin": "SOrigin"
+            },
+        };
+    </script> -->
+</head>
+<body>
+
+    <!-- Div which will hold the Output -->
+    <div id="WebGL-output">
+    </div>
+
+    <script type="text/javascript">
+        var dataX;
+        var dataZ;
+        var regex = /[^0-9]/g;	
+        var orbit; 
+        var rcCar;
+        var scene;
+        var rotationSpeed = 0;
+        var Container;
+        var velocityX =0.5;
+        var velocityZ =0.5;
+
+        // function download(){
+        //     $.ajax(settings).done(function (response) {
+        //         dataX = response['m2m:cin'].con.split(',')[0].replace(regex, "");;
+        //         dataZ = response['m2m:cin'].con.split(',')[1].replace(regex, "");;
+        //         dataX = dataX*2;
+        //         dataZ = dataZ*2;
+        //         console.log(dataX,dataZ)
+        //     });
+        // };
+
+        setInterval(download,1000);
+
+
+        function leftTurn (){
+                    rotationSpeed = 0.06545;
+                    setTimeout(function(){
+                        rotationSpeed = 0;
+                        Container.rotation.y = Math.PI * 0.5;
+                    },380); //1480에서 더 세밀하게 조율 들어가면 좋겠당..
+        };
+
+        function leftTurn2 (){
+                    rotationSpeed = 0.06545;
+                    setTimeout(function(){
+                        rotationSpeed = 0;
+                        Container.rotation.y = Math.PI; 
+                    },380); //1480에서 더 세밀하게 조율 들어가면 좋겠당..
+        };
+
+        function leftTurn3 (){
+                    rotationSpeed = 0.06545;
+                    setTimeout(function(){
+                        rotationSpeed = 0;
+                        Container.rotation.y = Math.PI * 1.5;
+                    },380); //1480에서 더 세밀하게 조율 들어가면 좋겠당..
+        };
+
+        function leftTurn4 (){
+                    rotationSpeed = 0.06545;
+                    setTimeout(function(){
+                        rotationSpeed = 0;
+                        Container.rotation.y = 0;
+                    },380); //1480에서 더 세밀하게 조율 들어가면 좋겠당..
+        };
+
+        function rightTurn (){
+            rotationSpeed = -0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = Math.PI * 0.5;
+            },380);
+        };
+
+        function rightTurn2 (){
+            rotationSpeed = -0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = Math.PI;
+            },380);
+        };
+
+        function rightTurn3 (){
+            rotationSpeed = -0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = Math.PI * 1.5;
+            },380);
+        };
+        function rightTurn4 (){
+            rotationSpeed = -0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = 0;
+            },380);
+        };
+
+        function turnAround(){
+            rotationSpeed = 0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = 0;
+            },760);            
+        }
+
+        function turnAround2(){
+            rotationSpeed = 0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = Math.PI * 0.5;
+            },760);            
+        }
+        function turnAround3(){
+            rotationSpeed = 0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = Math.PI;
+            },760);            
+        }
+        function turnAround4(){
+            rotationSpeed = 0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = Math.PI * 1.5;
+            },760);            
+        }
+        function init() {
+
+            // 신 만들고
+            scene = new THREE.Scene();
+
+            // create a render and set the size
+            var renderer = new THREE.WebGLRenderer();
+            renderer.setClearColor(new THREE.Color(0x000, 1.0));
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            // 이 축은 실제 트라이 때 지울 것
+            var axes = new THREE.AxisHelper(1000);
+            scene.add(axes);
+
+            // create a camera, which defines where we're looking at.
+            var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100000);
+            camera.position.x = 300;
+            camera.position.y = 1000;
+            camera.position.z = 1800;
+
+            // controls 객체 만들어주구요
+            var controls = new function () {
+                this.switchCamera2 = function () {
+                    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100000);
+                    camera.position.x = -190;
+                    camera.position.y = 1000;
+                    camera.position.z = 4564;
+                    orbit = new THREE.OrbitControls(camera, renderer.domElement);
+                };
+                this.switchCamera3 = function () {
+                    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100000);
+                    camera.position.x = 2400;
+                    camera.position.y = 1000;
+                    camera.position.z = 4500;
+                    orbit = new THREE.OrbitControls(camera, renderer.domElement);
+                };
+                this.switchCamera4 = function () {
+                    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100000);
+                    camera.position.x = 3500;
+                    camera.position.y = 1000;
+                    camera.position.z = 1500;
+                    orbit = new THREE.OrbitControls(camera, renderer.domElement);
+                };
+                this.switchCamera5 = function () {
+                    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100000);
+                    camera.position.x = 6600;
+                    camera.position.y = 1000;
+                    camera.position.z = 1600;
+                    orbit = new THREE.OrbitControls(camera, renderer.domElement);
+                };
+                this.switchCamera6 = function () {
+                    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100000);
+                    camera.position.x = 7000;
+                    camera.position.y = 1000;
+                    camera.position.z = 5000;
+                    orbit = new THREE.OrbitControls(camera, renderer.domElement);
+                };
+            };
+
+            // 오르빗 세팅해주구요
+            orbit = new THREE.OrbitControls(camera, renderer.domElement);
+
+            // dat.Gui 사용해주구요
+            var gui = new dat.GUI();
+            gui.add(controls, 'switchCamera2');
+            gui.add(controls, 'switchCamera3');
+            gui.add(controls, 'switchCamera4');
+            gui.add(controls, 'switchCamera5');
+            gui.add(controls, 'switchCamera6');
+
+            // camera를 굳이 이번에는 담지 않기 때문에 컨테이너가 필요 없으나,, 1인칭 html 파일과의 통일성 위해 설치
+            Container = new THREE.Object3D();
+            rcCar = Car();
+            rcCar.rotation.x = -0.5 * Math.PI;
+            rcCar.rotation.z = -0.5 * Math.PI;
+            Container.add(rcCar);
+            scene.add(Container);
+            // asphaltMap();
+            yellowRoadLine();
+            whiteRoadLine();
+            crossLine();
+            whiteMiniRoadLine();
+            mapping();
+            setLight();
+
+
+            // add the output of the renderer to the html element
+            document.getElementById("WebGL-output").appendChild(renderer.domElement);
+
+            render();
+
+
+            function render() {
+                orbit.update();
+                if(dataX > Container.position.x){
+                    Container.position.x += velocityX;
+                    if(Container.rotation.y ==0)leftTurn();
+                    if(Container.rotation.y == Math.PI)rightTurn();
+                    if(Container.rotation.y == Math.PI*1.5)turnAround2();
+                }
+                else if(dataX < Container.position.x){
+                    Container.position.x -= velocityX;
+                    if(Container.rotation.y == Math.PI)leftTurn3();
+                    if(Container.rotation.y == 0)rightTurn3();
+                    if(Container.rotation.y == Math.PI*0.5)turnAround4();
+                }
+                if(dataZ > Container.position.z){
+                    Container.position.z += velocityZ;
+                    if(Container.rotation.y == Math.PI*1.5)leftTurn4();
+                    if(Container.rotation.y == Math.PI*0.5)rightTurn4();
+                    if(Container.rotation.y == Math.PI)turnAround();
+                }
+                else if(dataZ < Container.position.z){
+                    Container.position.z -= velocityZ;
+                    if(Container.rotation.y == Math.PI*0.5)leftTurn2();
+                    if(Container.rotation.y == Math.PI*1.5)rightTurn2();
+                    if(Container.rotation.y == 0)turnAround3();
+                }
+                if(rotationSpeed){
+                    Container.rotation.y += rotationSpeed;
+                }
+                // cctv 처럼 카메라 포커스 잡아주고
+                if (camera instanceof THREE.Camera) {
+                    camera.lookAt(new THREE.Vector3(Container.position.x, 10, Container.position.z));
+                }
+                requestAnimationFrame(render);
+                renderer.render(scene, camera);
+                }
+    }
+    window.onload = init
+</script>
+</body>
+</html>
