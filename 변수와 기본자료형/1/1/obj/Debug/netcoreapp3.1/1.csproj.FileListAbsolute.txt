@@ -1,0 +1,13 @@
+C:\Users\samsung\Desktop\포큐씨샵\3주차\변수와 기본자료형\1\1\bin\Debug\netcoreapp3.1\1.exe
+C:\Users\samsung\Desktop\포큐씨샵\3주차\변수와 기본자료형\1\1\bin\Debug\netcoreapp3.1\1.deps.json
+C:\Users\samsung\Desktop\포큐씨샵\3주차\변수와 기본자료형\1\1\bin\Debug\netcoreapp3.1\1.runtimeconfig.json
+C:\Users\samsung\Desktop\포큐씨샵\3주차\변수와 기본자료형\1\1\bin\Debug\netcoreapp3.1\1.runtimeconfig.dev.json
+C:\Users\samsung\Desktop\포큐씨샵\3주차\변수와 기본자료형\1\1\bin\Debug\netcoreapp3.1\1.dll
+C:\Users\samsung\Desktop\포큐씨샵\3주차\변수와 기본자료형\1\1\bin\Debug\netcoreapp3.1\1.pdb
+C:\Users\samsung\Desktop\포큐씨샵\3주차\변수와 기본자료형\1\1\obj\Debug\netcoreapp3.1\1.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\samsung\Desktop\포큐씨샵\3주차\변수와 기본자료형\1\1\obj\Debug\netcoreapp3.1\1.AssemblyInfoInputs.cache
+C:\Users\samsung\Desktop\포큐씨샵\3주차\변수와 기본자료형\1\1\obj\Debug\netcoreapp3.1\1.AssemblyInfo.cs
+C:\Users\samsung\Desktop\포큐씨샵\3주차\변수와 기본자료형\1\1\obj\Debug\netcoreapp3.1\1.csproj.CoreCompileInputs.cache
+C:\Users\samsung\Desktop\포큐씨샵\3주차\변수와 기본자료형\1\1\obj\Debug\netcoreapp3.1\1.dll
+C:\Users\samsung\Desktop\포큐씨샵\3주차\변수와 기본자료형\1\1\obj\Debug\netcoreapp3.1\1.pdb
+C:\Users\samsung\Desktop\포큐씨샵\3주차\변수와 기본자료형\1\1\obj\Debug\netcoreapp3.1\1.genruntimeconfig.cache
