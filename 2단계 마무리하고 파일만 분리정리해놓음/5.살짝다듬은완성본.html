@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Example 02.07 - Cameras</title>
+    <script type="text/javascript" src="../libs/three.js"></script>
+    <script type="text/javascript" src="../libs/OrbitControls.js"></script>
+    <script type="text/javascript" src="../libs/dat.gui.js"></script>
+    <script type="text/javascript" src="./inputPositionXZ.js"></script>
+    <script type="text/javascript" src="./LRTurn.js"></script>
+    <script type="text/javascript" src="./Car.js"></script>
+    <script type="text/javascript" src="./base.js"></script>
+
+    <style> 
+        body {
+            /* set margin to 0 and overflow to hidden, to go fullscreen */
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <input type="number"; id="positionx" onkeyup="if(window.event.keyCode==13){inputPositionX()}"; value = "원하는x포지션"/>
+    <input type="number"; id="positionz" onkeyup="if(window.event.keyCode==13){inputPositionZ()}"; value = "원하는z포지션"/>
+    <input type="button"; id="turnRight" onclick=rightTurn(); value = "우회전"/>
+    <input type="button"; id="turnLeft" onclick=leftTurn(); value = "좌회전"/>
+
+<!-- Div which will hold the Output -->
+<div id="WebGL-output">
+
+<!-- Javascript code that runs our Three.js examples -->
+<script type="text/javascript">
+    prompt('nono dont do that nono dont dothat')
+    var orbit; 
+    var rcCar;
+    var rotationSpeed = 0;
+    var Container;
+    var positionX;
+    var positionZ;
+    var velocityX = 100;
+    var velocityZ = 100;
+
+    window.addEventListener('load',init);
+</script>
+</body>
+</html>
+

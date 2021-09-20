@@ -1,0 +1,1673 @@
+ <!DOCTYPE html>
+<html>
+<head>
+    <title>Example 02.07 - Cameras</title>
+    <script type="text/javascript" src="../libs/three.js"></script>
+    <script type="text/javascript" src="../libs/OrbitControls.js"></script>
+    <script type="text/javascript" src="../libs/dat.gui.js"></script>
+    <script src="jquery-3.6.0.min.js"></script>
+    <script src="1.JS"></script>
+    <script type="text/javascript" src="../libs/FirstPersonControls.js"></script>
+
+    <style> 
+        body {
+            /* set margin to 0 and overflow to hidden, to go fullscreen */
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+    <script>
+        var settings = {
+            "url": "http://203.253.128.161:7579/Mobius/boongx2/data/la",
+            "method": "GET",
+            "timeout": 0,
+            "headers": {
+                "Accept": "application/json",
+                "X-M2M-RI": "12345",
+                "X-M2M-Origin": "SOrigin"
+            },
+        };
+    </script>
+</head>
+<body>
+
+    <!-- Div which will hold the Output -->
+    <div id="WebGL-output">
+    </div>
+
+    <script type="text/javascript">
+        var dataX;
+        var dataZ;
+        var regex = /[^0-9]/g;	
+        var orbit; 
+        var rcCar;
+        var rotationSpeed = 0;
+        var Container;
+        var velocityX =0.5;
+        var velocityZ =0.5;
+
+        // function download(){
+        //     $.ajax(settings).done(function (response) {
+        //         dataX = response['m2m:cin'].con.split(',')[0].replace(regex, "");;
+        //         dataZ = response['m2m:cin'].con.split(',')[1].replace(regex, "");;
+        //         dataX = dataX*2;
+        //         dataZ = dataZ*2;
+        //         console.log(dataX,dataZ)
+        //     });
+        // };
+// 0 15 30 45 60 75 90 05 30 45 60
+
+            setInterval(download,1000);
+            function createMesh(geom, imageFile) {
+            var texture = THREE.ImageUtils.loadTexture("../assets/textures/general/" + imageFile);
+            var mat = new THREE.MeshPhongMaterial();
+            mat.map = texture;
+
+            var mesh = new THREE.Mesh(geom, mat);
+            return mesh;
+        }
+
+
+        function leftTurn (){
+                    rotationSpeed = 0.06545;
+                    setTimeout(function(){
+                        rotationSpeed = 0;
+                        Container.rotation.y = Math.PI * 0.5;
+                    },380); //1480에서 더 세밀하게 조율 들어가면 좋겠당..
+        };
+
+        function leftTurn2 (){
+                    rotationSpeed = 0.06545;
+                    setTimeout(function(){
+                        rotationSpeed = 0;
+                        Container.rotation.y = Math.PI; 
+                    },380); //1480에서 더 세밀하게 조율 들어가면 좋겠당..
+        };
+
+        function leftTurn3 (){
+                    rotationSpeed = 0.06545;
+                    setTimeout(function(){
+                        rotationSpeed = 0;
+                        Container.rotation.y = Math.PI * 1.5;
+                    },380); //1480에서 더 세밀하게 조율 들어가면 좋겠당..
+        };
+
+        function leftTurn4 (){
+                    rotationSpeed = 0.06545;
+                    setTimeout(function(){
+                        rotationSpeed = 0;
+                        Container.rotation.y = 0;
+                    },380); //1480에서 더 세밀하게 조율 들어가면 좋겠당..
+        };
+
+        function rightTurn (){
+            rotationSpeed = -0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = Math.PI * 0.5;
+            },380);
+        };
+
+        function rightTurn2 (){
+            rotationSpeed = -0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = Math.PI;
+            },380);
+        };
+
+        function rightTurn3 (){
+            rotationSpeed = -0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = Math.PI * 1.5;
+            },380);
+        };
+        function rightTurn4 (){
+            rotationSpeed = -0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = 0;
+            },380);
+        };
+
+        function turnAround(){
+            rotationSpeed = 0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = 0;
+            },760);            
+        }
+
+        function turnAround2(){
+            rotationSpeed = 0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = Math.PI * 0.5;
+            },760);            
+        }
+        function turnAround3(){
+            rotationSpeed = 0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = Math.PI;
+            },760);            
+        }
+        function turnAround4(){
+            rotationSpeed = 0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = Math.PI * 1.5;
+            },760);            
+        }
+
+        function init() {
+
+            // 신 만들고
+            var scene = new THREE.Scene();
+
+            // create a render and set the size
+            var renderer = new THREE.WebGLRenderer();
+            renderer.setClearColor(new THREE.Color(0x000, 1.0));
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            var clock = new THREE.Clock();
+
+            // create a camera, which defines where we're looking at.
+            var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100000);
+
+
+            // position and point the camera to the center of the scene
+            camera.position.x = 0;
+            camera.position.y = 100;
+            camera.position.z = -200;
+            
+
+            var camControls = new THREE.FirstPersonControls(camera);
+            camControls.lookSpeed = 0.3;
+            camControls.movementSpeed = 900;
+            camControls.noFly = true;
+            camControls.lookVertical = true;
+            camControls.constrainVertical = true;
+            camControls.verticalMin = 1.0;
+            camControls.verticalMax = 2.0;
+            camControls.lon = -150;
+            camControls.lat = 120;
+
+            var plane = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            plane.rotation.x = -0.5 * Math.PI;
+            plane.position.x = 0;
+            plane.position.y = 0;
+            plane.position.z = 160;
+            scene.add(plane);
+
+            var plane2 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            plane2.rotation.x = -0.5 * Math.PI;
+            plane2.position.x = 0;
+            plane2.position.y = 0;
+            plane2.position.z = 540;
+            scene.add(plane2);
+
+            var plane3 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            plane3.rotation.x = -0.5 * Math.PI;
+            plane3.position.x = 0;
+            plane3.position.y = 0;
+            plane3.position.z = 920;
+            scene.add(plane3);
+
+            var plane4 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            plane4.rotation.x = -0.5 * Math.PI;
+            plane4.position.x = 0;
+            plane4.position.y = 0;
+            plane4.position.z = 1300;
+            scene.add(plane4);
+
+            var plane5 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            plane5.rotation.x = -0.5 * Math.PI;
+            plane5.position.x = 0;
+            plane5.position.y = 0;
+            plane5.position.z = 1680;
+            scene.add(plane5);
+
+            var plane6 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            plane6.rotation.x = -0.5 * Math.PI;
+            plane6.position.x = 0;
+            plane6.position.y = 0;
+            plane6.position.z = 2060;
+            scene.add(plane6);
+
+            var plane7 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            plane7.rotation.x = -0.5 * Math.PI;
+            plane7.position.x = 0;
+            plane7.position.y = 0;
+            plane7.position.z = 2440;
+            scene.add(plane7);
+
+            var plane8 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            plane8.rotation.x = -0.5 * Math.PI;
+            plane8.position.x = 0;
+            plane8.position.y = 0;
+            plane8.position.z = 2820;
+            scene.add(plane8);
+
+            var plane9 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            plane9.rotation.x = -0.5 * Math.PI;
+            plane9.position.x = 0;
+            plane9.position.y = 0;
+            plane9.position.z = 3200;
+            scene.add(plane9);
+
+            var plane10 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            plane10.rotation.x = -0.5 * Math.PI;
+            plane10.position.x = 0;
+            plane10.position.y = 0;
+            plane10.position.z = 3580;
+            scene.add(plane10);
+
+            var plane11 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            plane11.rotation.x = -0.5 * Math.PI;
+            plane11.position.x = 0;
+            plane11.position.y = 0;
+            plane11.position.z = 3960;
+            scene.add(plane11);
+
+            var plane12 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            plane12.rotation.x = -0.5 * Math.PI;
+            plane12.position.x = 0;
+            plane12.position.y = 0;
+            plane12.position.z = 4340;
+            scene.add(plane12);
+
+            var plane13 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            plane13.rotation.x = -0.5 * Math.PI;
+            plane13.position.x = 0;
+            plane13.position.y = 0;
+            plane13.position.z = 4720;
+            scene.add(plane13);
+
+            var plane14 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            plane14.rotation.x = -0.5 * Math.PI;
+            plane14.position.x = 0;
+            plane14.position.y = 0;
+            plane14.position.z = 5100;
+            scene.add(plane14);
+
+            var plane15 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            plane15.rotation.x = -0.5 * Math.PI;
+            plane15.position.x = 0;
+            plane15.position.y = 0;
+            plane15.position.z = 5480;
+            scene.add(plane15);
+
+            var plane16 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            plane16.rotation.x = -0.5 * Math.PI;
+            plane16.position.x = 0;
+            plane16.position.y = 0;
+            plane16.position.z = 5860;
+            scene.add(plane16);
+
+            var plane17 = createMesh(new THREE.PlaneGeometry(380,184),"darkasphalt.jpg")
+            plane17.rotation.x = -0.5 * Math.PI;
+            plane17.position.x = 0;
+            plane17.position.y = 0;
+            plane17.position.z = 6142;
+            scene.add(plane17);
+
+            //1번도로
+            var planeOne = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeOne.rotation.x = -0.5 * Math.PI;
+            planeOne.position.x = 380;
+            planeOne.position.y = 0;
+            planeOne.position.z = 1810;
+            scene.add(planeOne);
+
+            var planeOne2 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeOne2.rotation.x = -0.5 * Math.PI;
+            planeOne2.position.x = 760;
+            planeOne2.position.y = 0;
+            planeOne2.position.z = 1810;
+            scene.add(planeOne2);
+
+            var planeOne3 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeOne3.rotation.x = -0.5 * Math.PI;
+            planeOne3.position.x = 1140;
+            planeOne3.position.y = 0;
+            planeOne3.position.z = 1810;
+            scene.add(planeOne3);
+
+            var planeOne4 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeOne4.rotation.x = -0.5 * Math.PI;
+            planeOne4.position.x = 1520;
+            planeOne4.position.y = 0;
+            planeOne4.position.z = 1810;
+            scene.add(planeOne4);
+
+            var planeOne5 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeOne5.rotation.x = -0.5 * Math.PI;
+            planeOne5.position.x = 1900;
+            planeOne5.position.y = 0;
+            planeOne5.position.z = 1810;
+            scene.add(planeOne5);
+
+            var planeOne6 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeOne6.rotation.x = -0.5 * Math.PI;
+            planeOne6.position.x = 2280;
+            planeOne6.position.y = 0;
+            planeOne6.position.z = 1810;
+            scene.add(planeOne6);
+
+            var planeOne7 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeOne7.rotation.x = -0.5 * Math.PI;
+            planeOne7.position.x = 2660;
+            planeOne7.position.y = 0;
+            planeOne7.position.z = 1810;
+            scene.add(planeOne7);
+
+            var planeOne8 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeOne8.rotation.x = -0.5 * Math.PI;
+            planeOne8.position.x = 3040;
+            planeOne8.position.y = 0;
+            planeOne8.position.z = 1810;
+            scene.add(planeOne8);
+
+            var planeOne9 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeOne9.rotation.x = -0.5 * Math.PI;
+            planeOne9.position.x = 3420;
+            planeOne9.position.y = 0;
+            planeOne9.position.z = 1810;
+            scene.add(planeOne9);
+
+            var planeOne10 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeOne10.rotation.x = -0.5 * Math.PI;
+            planeOne10.position.x = 3800;
+            planeOne10.position.y = 0;
+            planeOne10.position.z = 1810;
+            scene.add(planeOne10);
+
+            var planeOne11 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeOne11.rotation.x = -0.5 * Math.PI;
+            planeOne11.position.x = 4180;
+            planeOne11.position.y = 0;
+            planeOne11.position.z = 1810;
+            scene.add(planeOne11);
+
+            var planeOne12 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeOne12.rotation.x = -0.5 * Math.PI;
+            planeOne12.position.x = 4560;
+            planeOne12.position.y = 0;
+            planeOne12.position.z = 1810;
+            scene.add(planeOne12);
+
+            var planeOne13 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeOne13.rotation.x = -0.5 * Math.PI;
+            planeOne13.position.x = 4940;
+            planeOne13.position.y = 0;
+            planeOne13.position.z = 1810;
+            scene.add(planeOne13);
+
+            var planeOne14 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeOne14.rotation.x = -0.5 * Math.PI;
+            planeOne14.position.x = 5320;
+            planeOne14.position.y = 0;
+            planeOne14.position.z = 1810;
+            scene.add(planeOne14);
+
+            var planeOne15 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeOne15.rotation.x = -0.5 * Math.PI;
+            planeOne15.position.x = 5700;
+            planeOne15.position.y = 0;
+            planeOne15.position.z = 1810;
+            scene.add(planeOne15);
+
+            var planeOne16 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeOne16.rotation.x = -0.5 * Math.PI;
+            planeOne16.position.x = 6080;
+            planeOne16.position.y = 0;
+            planeOne16.position.z = 1810;
+            scene.add(planeOne16);
+
+            var planeOne17 = createMesh(new THREE.PlaneGeometry(484,380),"darkasphalt.jpg")
+            planeOne17.rotation.x = -0.5 * Math.PI;
+            planeOne17.position.x = 6512;
+            planeOne17.position.y = 0;
+            planeOne17.position.z = 1810;
+            scene.add(planeOne17);
+            //2번도로
+            var planeTwo = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeTwo.rotation.x = -0.5 * Math.PI;
+            planeTwo.position.x = 380;
+            planeTwo.position.y = 0;
+            planeTwo.position.z = 4394;
+            scene.add(planeTwo);
+
+            var planeTwo2 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeTwo2.rotation.x = -0.5 * Math.PI;
+            planeTwo2.position.x = 760;
+            planeTwo2.position.y = 0;
+            planeTwo2.position.z = 4394;
+            scene.add(planeTwo2);
+
+            var planeTwo3 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeTwo3.rotation.x = -0.5 * Math.PI;
+            planeTwo3.position.x = 1140;
+            planeTwo3.position.y = 0;
+            planeTwo3.position.z = 4394;
+            scene.add(planeTwo3);
+
+            var planeTwo4 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeTwo4.rotation.x = -0.5 * Math.PI;
+            planeTwo4.position.x = 1520;
+            planeTwo4.position.y = 0;
+            planeTwo4.position.z = 4394;
+            scene.add(planeTwo4);
+
+            var planeTwo5 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeTwo5.rotation.x = -0.5 * Math.PI;
+            planeTwo5.position.x = 1900;
+            planeTwo5.position.y = 0;
+            planeTwo5.position.z = 4394;
+            scene.add(planeTwo5);
+
+            var planeTwo6 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeTwo6.rotation.x = -0.5 * Math.PI;
+            planeTwo6.position.x = 2280;
+            planeTwo6.position.y = 0;
+            planeTwo6.position.z = 4394;
+            scene.add(planeTwo6);
+
+            var planeTwo7 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeTwo7.rotation.x = -0.5 * Math.PI;
+            planeTwo7.position.x = 2660;
+            planeTwo7.position.y = 0;
+            planeTwo7.position.z = 4394;
+            scene.add(planeTwo7);
+
+            var planeTwo8 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeTwo8.rotation.x = -0.5 * Math.PI;
+            planeTwo8.position.x = 3040;
+            planeTwo8.position.y = 0;
+            planeTwo8.position.z = 4394;
+            scene.add(planeTwo8);
+
+            var planeTwo9 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeTwo9.rotation.x = -0.5 * Math.PI;
+            planeTwo9.position.x = 3420;
+            planeTwo9.position.y = 0;
+            planeTwo9.position.z = 4394;
+            scene.add(planeTwo9);
+
+            var planeTwo10 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeTwo10.rotation.x = -0.5 * Math.PI;
+            planeTwo10.position.x = 3800;
+            planeTwo10.position.y = 0;
+            planeTwo10.position.z = 4394;
+            scene.add(planeTwo10);
+
+            var planeTwo11 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeTwo11.rotation.x = -0.5 * Math.PI;
+            planeTwo11.position.x = 4180;
+            planeTwo11.position.y = 0;
+            planeTwo11.position.z = 4394;
+            scene.add(planeTwo11);
+
+            var planeTwo12 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeTwo12.rotation.x = -0.5 * Math.PI;
+            planeTwo12.position.x = 4560;
+            planeTwo12.position.y = 0;
+            planeTwo12.position.z = 4394;
+            scene.add(planeTwo12);
+
+            var planeTwo13 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeTwo13.rotation.x = -0.5 * Math.PI;
+            planeTwo13.position.x = 4940;
+            planeTwo13.position.y = 0;
+            planeTwo13.position.z = 4394;
+            scene.add(planeTwo13);
+
+            var planeTwo14 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeTwo14.rotation.x = -0.5 * Math.PI;
+            planeTwo14.position.x = 5320;
+            planeTwo14.position.y = 0;
+            planeTwo14.position.z = 4394;
+            scene.add(planeTwo14);
+
+            var planeTwo15 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeTwo15.rotation.x = -0.5 * Math.PI;
+            planeTwo15.position.x = 5700;
+            planeTwo15.position.y = 0;
+            planeTwo15.position.z = 4394;
+            scene.add(planeTwo15);
+
+            var planeTwo16 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeTwo16.rotation.x = -0.5 * Math.PI;
+            planeTwo16.position.x = 6080;
+            planeTwo16.position.y = 0;
+            planeTwo16.position.z = 4394;
+            scene.add(planeTwo16);
+
+            var planeTwo17 = createMesh(new THREE.PlaneGeometry(484,380),"darkasphalt.jpg")
+            planeTwo17.rotation.x = -0.5 * Math.PI;
+            planeTwo17.position.x = 6512;
+            planeTwo17.position.y = 0;
+            planeTwo17.position.z = 4394;
+            scene.add(planeTwo17);
+
+            //3번도로
+            var planeThree = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeThree.rotation.x = -0.5 * Math.PI;
+            planeThree.position.x = 6944;
+            planeThree.position.y = 0;
+            planeThree.position.z = 160;
+            scene.add(planeThree);
+
+            var planeThree2 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeThree2.rotation.x = -0.5 * Math.PI;
+            planeThree2.position.x = 6944;
+            planeThree2.position.y = 0;
+            planeThree2.position.z = 540;
+            scene.add(planeThree2);
+
+            var planeThree3 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeThree3.rotation.x = -0.5 * Math.PI;
+            planeThree3.position.x = 6944;
+            planeThree3.position.y = 0;
+            planeThree3.position.z = 920;
+            scene.add(planeThree3);
+
+            var planeThree4 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeThree4.rotation.x = -0.5 * Math.PI;
+            planeThree4.position.x = 6944;
+            planeThree4.position.y = 0;
+            planeThree4.position.z = 1300;
+            scene.add(planeThree4);
+
+            var planeThree5 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeThree5.rotation.x = -0.5 * Math.PI;
+            planeThree5.position.x = 6944;
+            planeThree5.position.y = 0;
+            planeThree5.position.z = 1680;
+            scene.add(planeThree5);
+
+            var planeThree6 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeThree6.rotation.x = -0.5 * Math.PI;
+            planeThree6.position.x = 6944;
+            planeThree6.position.y = 0;
+            planeThree6.position.z = 2060;
+            scene.add(planeThree6);
+
+            var planeThree7 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeThree7.rotation.x = -0.5 * Math.PI;
+            planeThree7.position.x = 6944;
+            planeThree7.position.y = 0;
+            planeThree7.position.z = 2440;
+            scene.add(planeThree7);
+
+            var planeThree8 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeThree8.rotation.x = -0.5 * Math.PI;
+            planeThree8.position.x = 6944;
+            planeThree8.position.y = 0;
+            planeThree8.position.z = 2820;
+            scene.add(planeThree8);
+
+            var planeThree9 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeThree9.rotation.x = -0.5 * Math.PI;
+            planeThree9.position.x = 6944;
+            planeThree9.position.y = 0;
+            planeThree9.position.z = 3200;
+            scene.add(planeThree9);
+
+            var planeThree10 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeThree10.rotation.x = -0.5 * Math.PI;
+            planeThree10.position.x = 6944;
+            planeThree10.position.y = 0;
+            planeThree10.position.z = 3580;
+            scene.add(planeThree10);
+
+            var planeThree11 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeThree11.rotation.x = -0.5 * Math.PI;
+            planeThree11.position.x = 6944;
+            planeThree11.position.y = 0;
+            planeThree11.position.z = 3960;
+            scene.add(planeThree11);
+
+            var planeThree12 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeThree12.rotation.x = -0.5 * Math.PI;
+            planeThree12.position.x = 6944;
+            planeThree12.position.y = 0;
+            planeThree12.position.z = 4340;
+            scene.add(planeThree12);
+
+            var planeThree13 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeThree13.rotation.x = -0.5 * Math.PI;
+            planeThree13.position.x = 6944;
+            planeThree13.position.y = 0;
+            planeThree13.position.z = 4720;
+            scene.add(planeThree13);
+
+            var planeThree14 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeThree14.rotation.x = -0.5 * Math.PI;
+            planeThree14.position.x = 6944;
+            planeThree14.position.y = 0;
+            planeThree14.position.z = 5100;
+            scene.add(planeThree14);
+
+            var plane15 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            plane15.rotation.x = -0.5 * Math.PI;
+            plane15.position.x = 6944;
+            plane15.position.y = 0;
+            plane15.position.z = 5480;
+            scene.add(plane15);
+
+            var planeThree16 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeThree16.rotation.x = -0.5 * Math.PI;
+            planeThree16.position.x = 6944;
+            planeThree16.position.y = 0;
+            planeThree16.position.z = 5860;
+            scene.add(planeThree16);
+
+            var planeThree17 = createMesh(new THREE.PlaneGeometry(380,184),"darkasphalt.jpg")
+            planeThree17.rotation.x = -0.5 * Math.PI;
+            planeThree17.position.x = 6944;
+            planeThree17.position.y = 0;
+            planeThree17.position.z = 6142;
+            scene.add(planeThree17);
+
+            //4번 국도
+            var planeFour = createMesh(new THREE.PlaneGeometry(381,380),"darkasphalt.jpg")
+            planeFour.rotation.x = -0.5 * Math.PI;
+            planeFour.position.x = 3666.5;
+            planeFour.position.y = 0;
+            planeFour.position.z = 2190;
+            scene.add(planeFour);
+
+            var planeFour2 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeFour2.rotation.x = -0.5 * Math.PI;
+            planeFour2.position.x = 4047.5;
+            planeFour2.position.y = 0;
+            planeFour2.position.z = 2190;
+            scene.add(planeFour2);
+
+            var planeFour3 = createMesh(new THREE.PlaneGeometry(381,380),"darkasphalt.jpg")
+            planeFour3.rotation.x = -0.5 * Math.PI;
+            planeFour3.position.x = 3666.5;
+            planeFour3.position.y = 0;
+            planeFour3.position.z = 2570;
+            scene.add(planeFour3);
+
+            var planeFour4 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeFour4.rotation.x = -0.5 * Math.PI;
+            planeFour4.position.x = 4047.5;
+            planeFour4.position.y = 0;
+            planeFour4.position.z = 2570;
+            scene.add(planeFour4);
+
+            var planeFour5 = createMesh(new THREE.PlaneGeometry(381,380),"darkasphalt.jpg")
+            planeFour5.rotation.x = -0.5 * Math.PI;
+            planeFour5.position.x = 3666.5;
+            planeFour5.position.y = 0;
+            planeFour5.position.z = 2950;
+            scene.add(planeFour5);
+
+            var planeFour6 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeFour6.rotation.x = -0.5 * Math.PI;
+            planeFour6.position.x = 4047.5;
+            planeFour6.position.y = 0;
+            planeFour6.position.z = 2950;
+            scene.add(planeFour6);
+
+            
+            var planeFour7 = createMesh(new THREE.PlaneGeometry(381,380),"darkasphalt.jpg")
+            planeFour7.rotation.x = -0.5 * Math.PI;
+            planeFour7.position.x = 3666.5;
+            planeFour7.position.y = 0;
+            planeFour7.position.z = 3330;
+            scene.add(planeFour7);
+
+            var planeFour8 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeFour8.rotation.x = -0.5 * Math.PI;
+            planeFour8.position.x = 4047.5;
+            planeFour8.position.y = 0;
+            planeFour8.position.z = 3330;
+            scene.add(planeFour8);
+
+            var planeFour9 = createMesh(new THREE.PlaneGeometry(381,380),"darkasphalt.jpg")
+            planeFour9.rotation.x = -0.5 * Math.PI;
+            planeFour9.position.x = 3666.5;
+            planeFour9.position.y = 0;
+            planeFour9.position.z = 3710;
+            scene.add(planeFour9);
+
+            var planeFour10 = createMesh(new THREE.PlaneGeometry(380,380),"darkasphalt.jpg")
+            planeFour10.rotation.x = -0.5 * Math.PI;
+            planeFour10.position.x = 4047.5;
+            planeFour10.position.y = 0;
+            planeFour10.position.z = 3710;
+            scene.add(planeFour10);
+
+            var planeFour11 = createMesh(new THREE.PlaneGeometry(381,304),"darkasphalt.jpg")
+            planeFour11.rotation.x = -0.5 * Math.PI;
+            planeFour11.position.x = 3666.5;
+            planeFour11.position.y = 0;
+            planeFour11.position.z = 4052;
+            scene.add(planeFour11);
+
+            var planeFour12 = createMesh(new THREE.PlaneGeometry(380,304),"darkasphalt.jpg")
+            planeFour12.rotation.x = -0.5 * Math.PI;
+            planeFour12.position.x = 4047.5;
+            planeFour12.position.y = 0;
+            planeFour12.position.z = 4052;
+            scene.add(planeFour12);
+
+            // 차선 
+
+            var yellowForZeroGeometry = new THREE.PlaneGeometry(10,1590)
+            var yellowForZeroGeometry2 = new THREE.PlaneGeometry(10,2104)
+            var yellowForZeroGeometry3 = new THREE.PlaneGeometry(3226,10)
+            var yellowForZeroGeometry4 = new THREE.PlaneGeometry(2456,10)
+            var yellowForZeroGeometry5 = new THREE.PlaneGeometry(10,862)
+            var yellowForZeroGeometry6 = new THREE.PlaneGeometry(10,862)
+
+            var whiteMiniGeometry = new THREE.PlaneGeometry(8,40)
+
+            var yellowForZeroMaterial = new THREE.MeshLambertMaterial({color: 0xfad201});
+
+            var whiteForZeroMaterial = new THREE.MeshLambertMaterial({color: 0xffffff});
+
+            var yellowForZero = new THREE.Mesh(yellowForZeroGeometry, yellowForZeroMaterial);
+            yellowForZero.receiveShadow = true;
+            yellowForZero.rotation.x = -0.5 * Math.PI;
+            yellowForZero.position.x = 10;
+            yellowForZero.position.y = 1;
+            yellowForZero.position.z = 795;
+            scene.add(yellowForZero);
+
+            var yellowForZero2 = new THREE.Mesh(yellowForZeroGeometry, yellowForZeroMaterial);
+            yellowForZero2.receiveShadow = true;
+            yellowForZero2.rotation.x = -0.5 * Math.PI;
+            yellowForZero2.position.x = -10;
+            yellowForZero2.position.y = 1;
+            yellowForZero2.position.z = 795;
+            scene.add(yellowForZero2);
+
+
+            var yellowForZero3 = new THREE.Mesh(yellowForZeroGeometry, yellowForZeroMaterial);
+            yellowForZero3.receiveShadow = true;
+            yellowForZero3.rotation.x = -0.5 * Math.PI;
+            yellowForZero3.position.x = 6954;
+            yellowForZero3.position.y = 1;
+            yellowForZero3.position.z = 795;
+            scene.add(yellowForZero3);
+
+            var yellowForZero4 = new THREE.Mesh(yellowForZeroGeometry, yellowForZeroMaterial);
+            yellowForZero4.receiveShadow = true;
+            yellowForZero4.rotation.x = -0.5 * Math.PI;
+            yellowForZero4.position.x = 6934;
+            yellowForZero4.position.y = 1;
+            yellowForZero4.position.z = 795;
+            scene.add(yellowForZero4);
+///////////////////////////// 2번째 가로블록
+            var yellowForZero5 = new THREE.Mesh(yellowForZeroGeometry2, yellowForZeroMaterial);
+            yellowForZero5.receiveShadow = true;
+            yellowForZero5.rotation.x = -0.5 * Math.PI;
+            yellowForZero5.position.x = 10;
+            yellowForZero5.position.y = 1;
+            yellowForZero5.position.z = 3132;
+            scene.add(yellowForZero5);
+            
+            var yellowForZero6 = new THREE.Mesh(yellowForZeroGeometry2, yellowForZeroMaterial);
+            yellowForZero6.receiveShadow = true;
+            yellowForZero6.rotation.x = -0.5 * Math.PI;
+            yellowForZero6.position.x = -10;
+            yellowForZero6.position.y = 1;
+            yellowForZero6.position.z = 3132;
+            scene.add(yellowForZero6);
+
+
+            var yellowForZero7 = new THREE.Mesh(yellowForZeroGeometry2, yellowForZeroMaterial);
+            yellowForZero7.receiveShadow = true;
+            yellowForZero7.rotation.x = -0.5 * Math.PI;
+            yellowForZero7.position.x = 6954;
+            yellowForZero7.position.y = 1;
+            yellowForZero7.position.z = 3132;
+            scene.add(yellowForZero7);
+
+            var yellowForZero8 = new THREE.Mesh(yellowForZeroGeometry2, yellowForZeroMaterial);
+            yellowForZero8.receiveShadow = true;
+            yellowForZero8.rotation.x = -0.5 * Math.PI;
+            yellowForZero8.position.x = 6934;
+            yellowForZero8.position.y = 1;
+            yellowForZero8.position.z = 3132;
+            scene.add(yellowForZero8);
+////////////////////////////////////3번째 가로블록////////////
+            var yellowForZero9 = new THREE.Mesh(yellowForZeroGeometry, yellowForZeroMaterial);
+            yellowForZero9.receiveShadow = true;
+            yellowForZero9.rotation.x = -0.5 * Math.PI;
+            yellowForZero9.position.x = 10;
+            yellowForZero9.position.y = 1;
+            yellowForZero9.position.z = 5409;
+            scene.add(yellowForZero9);
+
+            var yellowForZero10 = new THREE.Mesh(yellowForZeroGeometry, yellowForZeroMaterial);
+            yellowForZero10.receiveShadow = true;
+            yellowForZero10.rotation.x = -0.5 * Math.PI;
+            yellowForZero10.position.x = -10;
+            yellowForZero10.position.y = 1;
+            yellowForZero10.position.z = 5409;
+            scene.add(yellowForZero10);
+
+
+            var yellowForZero11 = new THREE.Mesh(yellowForZeroGeometry, yellowForZeroMaterial);
+            yellowForZero11.receiveShadow = true;
+            yellowForZero11.rotation.x = -0.5 * Math.PI;
+            yellowForZero11.position.x = 6954;
+            yellowForZero11.position.y = 1;
+            yellowForZero11.position.z = 5409;
+            scene.add(yellowForZero11);
+
+            var yellowForZero12 = new THREE.Mesh(yellowForZeroGeometry, yellowForZeroMaterial);
+            yellowForZero12.receiveShadow = true;
+            yellowForZero12.rotation.x = -0.5 * Math.PI;
+            yellowForZero12.position.x = 6934;
+            yellowForZero12.position.y = 1;
+            yellowForZero12.position.z = 5409;
+            scene.add(yellowForZero12);
+//////////////////////////////////// 첫번째 세로블록 옐로
+            
+            var yellowForZero13 = new THREE.Mesh(yellowForZeroGeometry3, yellowForZeroMaterial);
+            yellowForZero13.receiveShadow = true;
+            yellowForZero13.rotation.x = -0.5 * Math.PI;
+            yellowForZero13.position.x = 1833;
+            yellowForZero13.position.y = 1;
+            yellowForZero13.position.z = 1800;
+            scene.add(yellowForZero13);
+
+            
+            var yellowForZero14 = new THREE.Mesh(yellowForZeroGeometry3, yellowForZeroMaterial);
+            yellowForZero14.receiveShadow = true;
+            yellowForZero14.rotation.x = -0.5 * Math.PI;
+            yellowForZero14.position.x = 1833;
+            yellowForZero14.position.y = 1;
+            yellowForZero14.position.z = 1820;
+            scene.add(yellowForZero14);
+
+            
+            var yellowForZero15 = new THREE.Mesh(yellowForZeroGeometry3, yellowForZeroMaterial);
+            yellowForZero15.receiveShadow = true;
+            yellowForZero15.rotation.x = -0.5 * Math.PI;
+            yellowForZero15.position.x = 1833;
+            yellowForZero15.position.y = 1;
+            yellowForZero15.position.z = 4384;
+            scene.add(yellowForZero15);
+            
+            var yellowForZero16 = new THREE.Mesh(yellowForZeroGeometry3, yellowForZeroMaterial);
+            yellowForZero16.receiveShadow = true;
+            yellowForZero16.rotation.x = -0.5 * Math.PI;
+            yellowForZero16.position.x = 1833;
+            yellowForZero16.position.y = 1;
+            yellowForZero16.position.z = 4404;
+            scene.add(yellowForZero16);
+
+            
+//////////////////////////////////////////////////두번째 세로블록 옐로우
+//////////////////////////////////////////////////두번째 세로블록 옐로우
+
+            var yellowForZero17 = new THREE.Mesh(yellowForZeroGeometry4, yellowForZeroMaterial);
+            yellowForZero17.receiveShadow = true;
+            yellowForZero17.rotation.x = -0.5 * Math.PI;
+            yellowForZero17.position.x = 5466;
+            yellowForZero17.position.y = 1;
+            yellowForZero17.position.z = 1800;
+            scene.add(yellowForZero17);
+
+            var yellowForZero18 = new THREE.Mesh(yellowForZeroGeometry4, yellowForZeroMaterial);
+            yellowForZero18.receiveShadow = true;
+            yellowForZero18.rotation.x = -0.5 * Math.PI;
+            yellowForZero18.position.x = 5466;
+            yellowForZero18.position.y = 1;
+            yellowForZero18.position.z = 1820;
+            scene.add(yellowForZero18);
+
+            var yellowForZero19 = new THREE.Mesh(yellowForZeroGeometry4, yellowForZeroMaterial);
+            yellowForZero19.receiveShadow = true;
+            yellowForZero19.rotation.x = -0.5 * Math.PI;
+            yellowForZero19.position.x = 5466;
+            yellowForZero19.position.y = 1;
+            yellowForZero19.position.z = 4384;
+            scene.add(yellowForZero19);
+
+            var yellowForZero20 = new THREE.Mesh(yellowForZeroGeometry4, yellowForZeroMaterial);
+            yellowForZero20.receiveShadow = true;
+            yellowForZero20.rotation.x = -0.5 * Math.PI;
+            yellowForZero20.position.x = 5466;
+            yellowForZero20.position.y = 1;
+            yellowForZero20.position.z = 4404;
+            scene.add(yellowForZero20);
+
+/////////////////////////////////////////////////////////////////////////
+            /////////////////////////////////////////////////////
+           var whiteForZero = new THREE.Mesh(yellowForZeroGeometry, whiteForZeroMaterial);
+            whiteForZero.receiveShadow = true;
+            whiteForZero.rotation.x = -0.5 * Math.PI;
+            whiteForZero.position.x = -175;
+            whiteForZero.position.y = 1;
+            whiteForZero.position.z = 795;
+            scene.add(whiteForZero);
+
+            var whiteForZero2 = new THREE.Mesh(yellowForZeroGeometry, whiteForZeroMaterial);
+            whiteForZero2.receiveShadow = true;
+            whiteForZero2.rotation.x = -0.5 * Math.PI;
+            whiteForZero2.position.x = 175;
+            whiteForZero2.position.y = 1;
+            whiteForZero2.position.z = 795;
+            scene.add(whiteForZero2);
+
+            var whiteForZero3 = new THREE.Mesh(yellowForZeroGeometry, whiteForZeroMaterial);
+            whiteForZero3.receiveShadow = true;
+            whiteForZero3.rotation.x = -0.5 * Math.PI;
+            whiteForZero3.position.x = 7124;
+            whiteForZero3.position.y = 1;
+            whiteForZero3.position.z = 795;
+            scene.add(whiteForZero3);
+
+            var whiteForZero4 = new THREE.Mesh(yellowForZeroGeometry, whiteForZeroMaterial);
+            whiteForZero4.receiveShadow = true;
+            whiteForZero4.rotation.x = -0.5 * Math.PI;
+            whiteForZero4.position.x = 6764;
+            whiteForZero4.position.y = 1;
+            whiteForZero4.position.z = 795;
+            scene.add(whiteForZero4);
+            // var whiteForZero = new THREE.Mesh(yellowForZeroGeometry, whiteForZeroMaterial);
+            // whiteForZero.receiveShadow = true;
+            // whiteForZero.rotation.x = -0.5 * Math.PI;
+            // whiteForZero.position.x = -175;
+            // whiteForZero.position.y = 1;
+            // whiteForZero.position.z = 795;
+            // scene.add(whiteForZero);
+
+            // var whiteForZero2 = new THREE.Mesh(yellowForZeroGeometry, whiteForZeroMaterial);
+            // whiteForZero2.receiveShadow = true;
+            // whiteForZero2.rotation.x = -0.5 * Math.PI;
+            // whiteForZero2.position.x = 175;
+            // whiteForZero2.position.y = 1;
+            // whiteForZero2.position.z = 795;
+            // scene.add(whiteForZero2);
+
+            // var whiteForZero3 = new THREE.Mesh(yellowForZeroGeometry, whiteForZeroMaterial);
+            // whiteForZero3.receiveShadow = true;
+            // whiteForZero3.rotation.x = -0.5 * Math.PI;
+            // whiteForZero3.position.x = 7124;
+            // whiteForZero3.position.y = 1;
+            // whiteForZero3.position.z = 795;
+            // scene.add(whiteForZero3);
+
+            // var whiteForZero4 = new THREE.Mesh(yellowForZeroGeometry, whiteForZeroMaterial);
+            // whiteForZero4.receiveShadow = true;
+            // whiteForZero4.rotation.x = -0.5 * Math.PI;
+            // whiteForZero4.position.x = 6764;
+            // whiteForZero4.position.y = 1;
+            // whiteForZero4.position.z = 795;
+            // scene.add(whiteForZero4);
+
+            /////////////////////화이트제로 2번째 블럭
+        var whiteForZero5 = new THREE.Mesh(yellowForZeroGeometry2, whiteForZeroMaterial);
+            whiteForZero5.receiveShadow = true;
+            whiteForZero5.rotation.x = -0.5 * Math.PI;
+            whiteForZero5.position.x = -175;
+            whiteForZero5.position.y = 1;
+            whiteForZero5.position.z = 3132;
+            scene.add(whiteForZero5);
+
+            var whiteForZero6 = new THREE.Mesh(yellowForZeroGeometry2, whiteForZeroMaterial);
+            whiteForZero6.receiveShadow = true;
+            whiteForZero6.rotation.x = -0.5 * Math.PI;
+            whiteForZero6.position.x = 175;
+            whiteForZero6.position.y = 1;
+            whiteForZero6.position.z = 3132;
+            scene.add(whiteForZero6);
+
+            var whiteForZero7 = new THREE.Mesh(yellowForZeroGeometry2, whiteForZeroMaterial);
+            whiteForZero7.receiveShadow = true;
+            whiteForZero7.rotation.x = -0.5 * Math.PI;
+            whiteForZero7.position.x = 7124;
+            whiteForZero7.position.y = 1;
+            whiteForZero7.position.z = 3132;
+            scene.add(whiteForZero7);
+
+            var whiteForZero8 = new THREE.Mesh(yellowForZeroGeometry2, whiteForZeroMaterial);
+            whiteForZero8.receiveShadow = true;
+            whiteForZero8.rotation.x = -0.5 * Math.PI;
+            whiteForZero8.position.x = 6764;
+            whiteForZero8.position.y = 1;
+            whiteForZero8.position.z = 3132;
+            scene.add(whiteForZero8);
+////////////////////화이트제로 3블럭
+            var whiteForZero9 = new THREE.Mesh(yellowForZeroGeometry, whiteForZeroMaterial);
+            whiteForZero9.receiveShadow = true;
+            whiteForZero9.rotation.x = -0.5 * Math.PI;
+            whiteForZero9.position.x = -175;
+            whiteForZero9.position.y = 1;
+            whiteForZero9.position.z = 5409;
+            scene.add(whiteForZero9);
+
+            var whiteForZero10 = new THREE.Mesh(yellowForZeroGeometry, whiteForZeroMaterial);
+            whiteForZero10.receiveShadow = true;
+            whiteForZero10.rotation.x = -0.5 * Math.PI;
+            whiteForZero10.position.x = 175;
+            whiteForZero10.position.y = 1;
+            whiteForZero10.position.z = 5409;
+            scene.add(whiteForZero10);
+
+            var whiteForZero11 = new THREE.Mesh(yellowForZeroGeometry, whiteForZeroMaterial);
+            whiteForZero11.receiveShadow = true;
+            whiteForZero11.rotation.x = -0.5 * Math.PI;
+            whiteForZero11.position.x = 7124;
+            whiteForZero11.position.y = 1;
+            whiteForZero11.position.z = 5409;
+            scene.add(whiteForZero11);
+
+            var whiteForZero12 = new THREE.Mesh(yellowForZeroGeometry, whiteForZeroMaterial);
+            whiteForZero12.receiveShadow = true;
+            whiteForZero12.rotation.x = -0.5 * Math.PI;
+            whiteForZero12.position.x = 6764;
+            whiteForZero12.position.y = 1;
+            whiteForZero12.position.z = 5409;
+            scene.add(whiteForZero12);
+////////////////////////////////////////////////////////////////////
+
+/////////////화이트제로 세로 첫 블럭////////////
+
+    var whiteForZero13 = new THREE.Mesh(yellowForZeroGeometry3, whiteForZeroMaterial);
+    whiteForZero13.receiveShadow = true;
+    whiteForZero13.rotation.x = -0.5 * Math.PI;
+    whiteForZero13.position.x = 1833;
+    whiteForZero13.position.y = 1;
+    whiteForZero13.position.z = 1640;
+    scene.add(whiteForZero13);
+
+    
+    var whiteForZero14 = new THREE.Mesh(yellowForZeroGeometry3, whiteForZeroMaterial);
+    whiteForZero14.receiveShadow = true;
+    whiteForZero14.rotation.x = -0.5 * Math.PI;
+    whiteForZero14.position.x = 1833;
+    whiteForZero14.position.y = 1;
+    whiteForZero14.position.z = 1980;
+    scene.add(whiteForZero14);
+
+    
+    var whiteForZero15 = new THREE.Mesh(yellowForZeroGeometry3, whiteForZeroMaterial);
+    whiteForZero15.receiveShadow = true;
+    whiteForZero15.rotation.x = -0.5 * Math.PI;
+    whiteForZero15.position.x = 1833;
+    whiteForZero15.position.y = 1;
+    whiteForZero15.position.z = 4224;
+    scene.add(whiteForZero15);
+    
+    var whiteForZero16 = new THREE.Mesh(yellowForZeroGeometry3, whiteForZeroMaterial);
+    whiteForZero16.receiveShadow = true;
+    whiteForZero16.rotation.x = -0.5 * Math.PI;
+    whiteForZero16.position.x = 1833;
+    whiteForZero16.position.y = 1;
+    whiteForZero16.position.z = 4564;
+    scene.add(whiteForZero16);
+
+/////////////화이트제로 세로 두번째 블럭 /////////////
+
+/////////////화이트제로 세로 두번째 블럭 /////////////
+
+
+    var whiteForZero17 = new THREE.Mesh(yellowForZeroGeometry4, whiteForZeroMaterial);
+    whiteForZero17.receiveShadow = true;
+    whiteForZero17.rotation.x = -0.5 * Math.PI;
+    whiteForZero17.position.x = 5466;
+    whiteForZero17.position.y = 1;
+    whiteForZero17.position.z = 1640;
+    scene.add(whiteForZero17);
+
+    var whiteForZero18 = new THREE.Mesh(yellowForZeroGeometry4, whiteForZeroMaterial);
+    whiteForZero18.receiveShadow = true;
+    whiteForZero18.rotation.x = -0.5 * Math.PI;
+    whiteForZero18.position.x = 5466;
+    whiteForZero18.position.y = 1;
+    whiteForZero18.position.z = 1980;
+    scene.add(whiteForZero18);
+
+    var whiteForZero19 = new THREE.Mesh(yellowForZeroGeometry4, whiteForZeroMaterial);
+    whiteForZero19.receiveShadow = true;
+    whiteForZero19.rotation.x = -0.5 * Math.PI;
+    whiteForZero19.position.x = 5466;
+    whiteForZero19.position.y = 1;
+    whiteForZero19.position.z = 4224;
+    scene.add(whiteForZero19);
+
+    var whiteForZero20 = new THREE.Mesh(yellowForZeroGeometry4, whiteForZeroMaterial);
+    whiteForZero20.receiveShadow = true;
+    whiteForZero20.rotation.x = -0.5 * Math.PI;
+    whiteForZero20.position.x = 5466;
+    whiteForZero20.position.y = 1;
+    whiteForZero20.position.z = 4564;
+    scene.add(whiteForZero20);
+//////////////////////////////////////////센터 횡단보도 + 거리만들기
+/////////////////////
+
+///////////////  엘베앞 센터 첫 블록
+            var yellowForZero21 = new THREE.Mesh(yellowForZeroGeometry5, yellowForZeroMaterial);
+            yellowForZero21.receiveShadow = true;
+            yellowForZero21.rotation.x = -0.5 * Math.PI;
+            yellowForZero21.position.x = 3847;
+            yellowForZero21.position.y = 1;
+            yellowForZero21.position.z = 2461;
+            scene.add(yellowForZero21);
+
+            
+            var yellowForZero22 = new THREE.Mesh(yellowForZeroGeometry5, yellowForZeroMaterial);
+            yellowForZero22.receiveShadow = true;
+            yellowForZero22.rotation.x = -0.5 * Math.PI;
+            yellowForZero22.position.x = 3867;
+            yellowForZero22.position.y = 1;
+            yellowForZero22.position.z = 2461;
+            scene.add(yellowForZero22);            
+//////////////////////////////////////////////////두번째 엘베앞
+
+            var yellowForZero23 = new THREE.Mesh(yellowForZeroGeometry6, yellowForZeroMaterial);
+            yellowForZero23.receiveShadow = true;
+            yellowForZero23.rotation.x = -0.5 * Math.PI;
+            yellowForZero23.position.x = 3847;
+            yellowForZero23.position.y = 1;
+            yellowForZero23.position.z = 3742;
+            scene.add(yellowForZero23);
+
+            var yellowForZero24 = new THREE.Mesh(yellowForZeroGeometry6, yellowForZeroMaterial);
+            yellowForZero24.receiveShadow = true;
+            yellowForZero24.rotation.x = -0.5 * Math.PI;
+            yellowForZero24.position.x = 3867;
+            yellowForZero24.position.y = 1;
+            yellowForZero24.position.z = 3742;
+            scene.add(yellowForZero24);
+
+//////////////////////////엘베 앞 흰 줄 
+
+            var whiteForZero21 = new THREE.Mesh(yellowForZeroGeometry5, whiteForZeroMaterial);
+            whiteForZero21.receiveShadow = true;
+            whiteForZero21.rotation.x = -0.5 * Math.PI;
+            whiteForZero21.position.x = 3492;
+            whiteForZero21.position.y = 1;
+            whiteForZero21.position.z = 2461;
+            scene.add(whiteForZero21);
+
+            var whiteForZero22 = new THREE.Mesh(yellowForZeroGeometry5, whiteForZeroMaterial);
+            whiteForZero22.receiveShadow = true;
+            whiteForZero22.rotation.x = -0.5 * Math.PI;
+            whiteForZero22.position.x = 4222;
+            whiteForZero22.position.y = 1;
+            whiteForZero22.position.z = 2461;
+            scene.add(whiteForZero22);
+///////////////////엘베앞 흰 둘!//////////////////
+            var whiteForZero23 = new THREE.Mesh(yellowForZeroGeometry6, whiteForZeroMaterial);
+            whiteForZero23.receiveShadow = true;
+            whiteForZero23.rotation.x = -0.5 * Math.PI;
+            whiteForZero23.position.x = 3492;
+            whiteForZero23.position.y = 1;
+            whiteForZero23.position.z = 3742;
+            scene.add(whiteForZero23);
+
+            var whiteForZero24 = new THREE.Mesh(yellowForZeroGeometry6, whiteForZeroMaterial);
+            whiteForZero24.receiveShadow = true;
+            whiteForZero24.rotation.x = -0.5 * Math.PI;
+            whiteForZero24.position.x = 4222;
+            whiteForZero24.position.y = 1;
+            whiteForZero24.position.z = 3742;
+            scene.add(whiteForZero24);
+
+    ////////////////////////////
+            function whiteMini(){
+                for(i=0; i<27;i++){
+                    var whiteMiniGeometry = new THREE.PlaneGeometry(8,40)
+                    var whiteMini = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    var whiteMini2 = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    var whiteMini3 = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    var whiteMini4 = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    whiteMini.receiveShadow = true;
+                    whiteMini.rotation.x = -0.5 * Math.PI;
+                    whiteMini.position.x = 85;
+                    whiteMini.position.y = 1;
+                    whiteMini.position.z = 20;
+                    whiteMini.position.z += 60*i;
+                    whiteMini2.receiveShadow = true;
+                    whiteMini2.rotation.x = -0.5 * Math.PI;
+                    whiteMini2.position.x = -85;
+                    whiteMini2.position.y = 1;
+                    whiteMini2.position.z = 20;
+                    whiteMini2.position.z += 60*i;
+                    whiteMini3.rotation.x = -0.5 * Math.PI;
+                    whiteMini3.position.x = 7029;
+                    whiteMini3.position.y = 1;
+                    whiteMini3.position.z = 20;
+                    whiteMini3.position.z += 60*i;
+                    whiteMini4.receiveShadow = true;
+                    whiteMini4.rotation.x = -0.5 * Math.PI;
+                    whiteMini4.position.x = 6869;
+                    whiteMini4.position.y = 1;
+                    whiteMini4.position.z = 20;
+                    whiteMini4.position.z += 60*i;
+                    scene.add(whiteMini);
+                    scene.add(whiteMini2);
+                    scene.add(whiteMini3);
+                    scene.add(whiteMini4);
+                }
+
+                for(i=35; i<70;i++){
+                    var whiteMiniGeometry = new THREE.PlaneGeometry(8,40)
+                    var whiteMini = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    var whiteMini2 = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    var whiteMini3 = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    var whiteMini4 = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    whiteMini.receiveShadow = true;
+                    whiteMini.rotation.x = -0.5 * Math.PI;
+                    whiteMini.position.x = 85;
+                    whiteMini.position.y = 1;
+                    whiteMini.position.z = 20;
+                    whiteMini.position.z += 60*i;
+                    whiteMini2.receiveShadow = true;
+                    whiteMini2.rotation.x = -0.5 * Math.PI;
+                    whiteMini2.position.x = -85;
+                    whiteMini2.position.y = 1;
+                    whiteMini2.position.z = 20;
+                    whiteMini2.position.z += 60*i;
+                    whiteMini3.receiveShadow = true;
+                    whiteMini3.rotation.x = -0.5 * Math.PI;
+                    whiteMini3.position.x = 7029;
+                    whiteMini3.position.y = 1;
+                    whiteMini3.position.z = 20;
+                    whiteMini3.position.z += 60*i;
+                    whiteMini4.receiveShadow = true;
+                    whiteMini4.rotation.x = -0.5 * Math.PI;
+                    whiteMini4.position.x = 6869;
+                    whiteMini4.position.y = 1;
+                    whiteMini4.position.z = 20;
+                    whiteMini4.position.z += 60*i;
+                    scene.add(whiteMini);
+                    scene.add(whiteMini2);
+                    scene.add(whiteMini3);
+                    scene.add(whiteMini4);
+                }
+
+                for(i=77; i<104;i++){
+                    var whiteMiniGeometry = new THREE.PlaneGeometry(8,40)
+                    var whiteMini = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    var whiteMini2 = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    var whiteMini3 = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    var whiteMini4 = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    whiteMini.receiveShadow = true;
+                    whiteMini.rotation.x = -0.5 * Math.PI;
+                    whiteMini.position.x = 85;
+                    whiteMini.position.y = 1;
+                    whiteMini.position.z = 20;
+                    whiteMini.position.z += 60*i;
+                    whiteMini2.receiveShadow = true;
+                    whiteMini2.rotation.x = -0.5 * Math.PI;
+                    whiteMini2.position.x = -85;
+                    whiteMini2.position.y = 1;
+                    whiteMini2.position.z = 20;
+                    whiteMini2.position.z += 60*i;
+                    whiteMini3.rotation.x = -0.5 * Math.PI;
+                    whiteMini3.position.x = 7029;
+                    whiteMini3.position.y = 1;
+                    whiteMini3.position.z = 20;
+                    whiteMini3.position.z += 60*i;
+                    whiteMini4.receiveShadow = true;
+                    whiteMini4.rotation.x = -0.5 * Math.PI;
+                    whiteMini4.position.x = 6869;
+                    whiteMini4.position.y = 1;
+                    whiteMini4.position.z = 20;
+                    whiteMini4.position.z += 60*i;
+                    scene.add(whiteMini);
+                    scene.add(whiteMini2);
+                    scene.add(whiteMini3);
+                    scene.add(whiteMini4);
+
+                }
+                for(j=1; j<54;j++){
+                    var whiteMiniGeometry = new THREE.PlaneGeometry(40,8)
+                    var whiteMini = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    var whiteMini2 = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    var whiteMini3 = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    var whiteMini4 = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    whiteMini.receiveShadow = true;
+                    whiteMini.rotation.x = -0.5 * Math.PI;
+                    whiteMini.position.x = 210;
+                    whiteMini.position.y = 1;
+                    whiteMini.position.z =1725;
+                    whiteMini.position.x += 60*j;
+                    whiteMini2.receiveShadow = true;
+                    whiteMini2.rotation.x = -0.5 * Math.PI;
+                    whiteMini2.position.x = 210;
+                    whiteMini2.position.y = 1;
+                    whiteMini2.position.z = 1895;
+                    whiteMini2.position.x += 60*j;
+                    whiteMini3.receiveShadow = true;
+                    whiteMini3.rotation.x = -0.5 * Math.PI;
+                    whiteMini3.position.x = 210;
+                    whiteMini3.position.y = 1;
+                    whiteMini3.position.z = 4309;
+                    whiteMini3.position.x += 60*j;
+                    whiteMini4.receiveShadow = true;
+                    whiteMini4.rotation.x = -0.5 * Math.PI;
+                    whiteMini4.position.x = 210;
+                    whiteMini4.position.y = 1;
+                    whiteMini4.position.z = 4489;
+                    whiteMini4.position.x += 60*j;
+                    scene.add(whiteMini);
+                    scene.add(whiteMini2);
+                    scene.add(whiteMini3);
+                    scene.add(whiteMini4);
+                }
+            
+                    for(j=68; j<108;j++){
+                    var whiteMiniGeometry = new THREE.PlaneGeometry(40,8)
+                    var whiteMini = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    var whiteMini2 = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    var whiteMini3 = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    var whiteMini4 = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    whiteMini.receiveShadow = true;
+                    whiteMini.rotation.x = -0.5 * Math.PI;
+                    whiteMini.position.x = 210;
+                    whiteMini.position.y = 1;
+                    whiteMini.position.z =1725;
+                    whiteMini.position.x += 60*j;
+                    whiteMini2.receiveShadow = true;
+                    whiteMini2.rotation.x = -0.5 * Math.PI;
+                    whiteMini2.position.x = 210;
+                    whiteMini2.position.y = 1;
+                    whiteMini2.position.z = 1895;
+                    whiteMini2.position.x += 60*j;
+                    whiteMini3.receiveShadow = true;
+                    whiteMini3.rotation.x = -0.5 * Math.PI;
+                    whiteMini3.position.x = 210;
+                    whiteMini3.position.y = 1;
+                    whiteMini3.position.z = 4309;
+                    whiteMini3.position.x += 60*j;
+                    whiteMini4.receiveShadow = true;
+                    whiteMini4.rotation.x = -0.5 * Math.PI;
+                    whiteMini4.position.x = 210;
+                    whiteMini4.position.y = 1;
+                    whiteMini4.position.z = 4489;
+                    whiteMini4.position.x += 60*j;
+                    scene.add(whiteMini);
+                    scene.add(whiteMini2);
+                    scene.add(whiteMini3);
+                    scene.add(whiteMini4);
+
+                }
+//zz
+                for(k=31; k<45;k++){
+                    var whiteMiniGeometry = new THREE.PlaneGeometry(8,40)
+                    var whiteMini = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    var whiteMini2 = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    var whiteMini3 = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    var whiteMini4 = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    whiteMini.receiveShadow = true;
+                    whiteMini.rotation.x = -0.5 * Math.PI;
+                    whiteMini.position.z = 210;
+                    whiteMini.position.y = 1;
+                    whiteMini.position.x =4100;
+                    whiteMini.position.z += 60*k;
+                    whiteMini2.receiveShadow = true;
+                    whiteMini2.rotation.x = -0.5 * Math.PI;
+                    whiteMini2.position.z = 210;
+                    whiteMini2.position.y = 1;
+                    whiteMini2.position.x = 3970;
+                    whiteMini2.position.z += 60*k;
+                    whiteMini3.receiveShadow = true;
+                    whiteMini3.rotation.x = -0.5 * Math.PI;
+                    whiteMini3.position.z = 210;
+                    whiteMini3.position.y = 1;
+                    whiteMini3.position.x = 3750;
+                    whiteMini3.position.z += 60*k;
+                    whiteMini4.receiveShadow = true;
+                    whiteMini4.rotation.x = -0.5 * Math.PI;
+                    whiteMini4.position.z = 210;
+                    whiteMini4.position.y = 1;
+                    whiteMini4.position.x = 3615;
+                    whiteMini4.position.z += 60*k;
+                    scene.add(whiteMini);
+                    scene.add(whiteMini2);
+                    scene.add(whiteMini3);
+                    scene.add(whiteMini4);
+
+                }
+                for(l=52; l<66;l++){
+                    var whiteMiniGeometry = new THREE.PlaneGeometry(8,40)
+                    var whiteMini = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    var whiteMini2 = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    var whiteMini3 = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    var whiteMini4 = new THREE.Mesh(whiteMiniGeometry, whiteForZeroMaterial);
+                    whiteMini.receiveShadow = true;
+                    whiteMini.rotation.x = -0.5 * Math.PI;
+                    whiteMini.position.z = 210;
+                    whiteMini.position.y = 1;
+                    whiteMini.position.x =4100;
+                    whiteMini.position.z += 60*l;
+                    whiteMini2.receiveShadow = true;
+                    whiteMini2.rotation.x = -0.5 * Math.PI;
+                    whiteMini2.position.z = 210;
+                    whiteMini2.position.y = 1;
+                    whiteMini2.position.x = 3970;
+                    whiteMini2.position.z += 60*l;
+                    whiteMini3.receiveShadow = true;
+                    whiteMini3.rotation.x = -0.5 * Math.PI;
+                    whiteMini3.position.z = 210;
+                    whiteMini3.position.y = 1;
+                    whiteMini3.position.x = 3750;
+                    whiteMini3.position.z += 60*l;
+                    whiteMini4.receiveShadow = true;
+                    whiteMini4.rotation.x = -0.5 * Math.PI;
+                    whiteMini4.position.z = 210;
+                    whiteMini4.position.y = 1;
+                    whiteMini4.position.x = 3615;
+                    whiteMini4.position.z += 60*l;
+                    scene.add(whiteMini);
+                    scene.add(whiteMini2);
+                    scene.add(whiteMini3);
+                    scene.add(whiteMini4);
+
+                }
+
+            }
+                whiteMini()
+            // 이 축은 실제 트라이 때 지울 것
+            var axes = new THREE.AxisHelper(1000);
+            scene.add(axes);
+
+            // 원점 기준 북쪽 벽 설치 
+            var northWallGeometry = new THREE.BoxGeometry(8324,1000,500)
+            var northWallMaterial = new THREE.MeshLambertMaterial({color:0x9B1003});
+            var northWall = new THREE.Mesh(northWallGeometry,northWallMaterial);
+            northWall.rotation.x = -0.5 * Math.PI;
+            northWall.position.x = 3472;
+            northWall.position.z = 6734;
+            northWall.position.y = 250;
+            scene.add(northWall)
+            // 원점 기준 남쪽 벽 설치 
+            var southWallGeometry = new THREE.BoxGeometry(8324,1000,500)
+            var southWallMaterial = new THREE.MeshLambertMaterial({color:0x040273});
+            var southWall = new THREE.Mesh(southWallGeometry,southWallMaterial);
+            southWall.rotation.x = -0.5 * Math.PI;
+            southWall.position.x = 3472;
+            southWall.position.z = -530;
+            southWall.position.y = 250;
+            scene.add(southWall)
+            //원점 기준 서쪽 벽 설치
+            var westWallGeometry = new THREE.BoxGeometry(500,6264,500)
+            var westWallMaterial = new THREE.MeshLambertMaterial({color:0x9c9723});
+            var westWall = new THREE.Mesh(westWallGeometry,westWallMaterial);
+            westWall.rotation.x = -0.5 * Math.PI;
+            westWall.position.z = 3102;
+            westWall.position.y = 250;
+            westWall.position.x = 7384;
+            scene.add(westWall)
+            //원점 기준 동쪽 벽 설치
+            var eastWallGeometry = new THREE.BoxGeometry(500,6264,500)
+            var eastWallMaterial = new THREE.MeshLambertMaterial({color:0x235347});
+            var eastWall = new THREE.Mesh(eastWallGeometry,eastWallMaterial);
+            eastWall.rotation.x = -0.5 * Math.PI;
+            eastWall.position.z = 3102;
+            eastWall.position.y = 250;
+            eastWall.position.x = -440;
+            scene.add(eastWall)
+            //랩실랩실
+            var LAB1Geometry = new THREE.BoxGeometry(6564,1650,500)
+            var LAB1Material = new THREE.MeshLambertMaterial();
+            LAB1Material.transparent = true;
+            LAB1Material.opacity = 0.7;
+            var LAB1 = new THREE.Mesh(LAB1Geometry,LAB1Material);
+            LAB1.rotation.x = -0.5 * Math.PI;
+            LAB1.position.z = 795;
+            LAB1.position.y = 250;
+            LAB1.position.x = 3472;
+            scene.add(LAB1)
+            var LAB2 = new THREE.Mesh(LAB1Geometry,LAB1Material);
+            LAB2.rotation.x = -0.5 * Math.PI;
+            LAB2.position.x = 3472;
+            LAB2.position.y = 250;
+            LAB2.position.z = 5409;
+            scene.add(LAB2)
+            //엘베엘베            
+            var Elevator1Geometry = new THREE.BoxGeometry(3286,2204,500)
+            var Elevator1 = new THREE.Mesh( Elevator1Geometry,LAB1Material);
+            Elevator1.rotation.x = -0.5 * Math.PI;
+            Elevator1.position.x = 1833;
+            Elevator1.position.z = 3102;
+            Elevator1.position.y = 250;
+            scene.add(Elevator1)
+            var Elevator2Geometry = new THREE.BoxGeometry(2516,2204,500)            
+            var Elevator2 = new THREE.Mesh( Elevator2Geometry,LAB1Material);
+            Elevator2.rotation.x = -0.5 * Math.PI;
+            Elevator2.position.x = 5496;
+            Elevator2.position.y = 250;
+            Elevator2.position.z = 3102;
+            scene.add(Elevator2)
+
+
+            // 직선광 하나 정도
+            var directionalLight = new THREE.DirectionalLight(0xffffff, 1.4);
+            directionalLight.position.set(3600, 4000, 3900);
+            scene.add(directionalLight);
+
+            // add subtle ambient lighting
+            var ambientLight = new THREE.AmbientLight(0x383838);
+            scene.add(ambientLight);
+            // controls 객체 만들어주구요
+
+            // camera를 굳이 이번에는 담지 않기 때문에 컨테이너가 필요 없으나,, 1인칭 html 파일과의 통일성 위해 설치
+            Container = new THREE.Object3D();
+            rcCar = Car();
+            rcCar.rotation.x = -0.5 * Math.PI;
+            rcCar.rotation.z = -0.5 * Math.PI;
+            Container.add(rcCar);
+            scene.add(Container);
+            // camera.lookAt(new THREE.Vector3(Container.position.x, 0,Container.position.z));
+
+            // add the output of the renderer to the html element
+            document.getElementById("WebGL-output").appendChild(renderer.domElement);
+            camera.lookAt(new THREE.Vector3(Container.position.x, 10, Container.position.z));
+
+            render();
+
+
+            function render() {
+
+                var delta = clock.getDelta();
+                camControls.update(delta);
+                if(dataX > Container.position.x){
+                    Container.position.x += velocityX;
+                    if(Container.rotation.y ==0)leftTurn();
+                    if(Container.rotation.y == Math.PI)rightTurn();
+                    if(Container.rotation.y == Math.PI*1.5)turnAround2();
+                }
+                else if(dataX < Container.position.x){
+                    Container.position.x -= velocityX;
+                    if(Container.rotation.y == Math.PI)leftTurn3();
+                    if(Container.rotation.y == 0)rightTurn3();
+                    if(Container.rotation.y == Math.PI*0.5)turnAround4();
+                }
+                if(dataZ > Container.position.z){
+                    Container.position.z += velocityZ;
+                    if(Container.rotation.y == Math.PI*1.5)leftTurn4();
+                    if(Container.rotation.y == Math.PI*0.5)rightTurn4();
+                    if(Container.rotation.y == Math.PI)turnAround();
+                }
+                else if(dataZ < Container.position.z){
+                    Container.position.z -= velocityZ;
+                    if(Container.rotation.y == Math.PI*0.5)leftTurn2();
+                    if(Container.rotation.y == Math.PI*1.5)rightTurn2();
+                    if(Container.rotation.y == 0)turnAround3();
+                }
+                if(rotationSpeed){
+                    Container.rotation.y += rotationSpeed;
+                }
+                // cctv 처럼 카메라 포커스 잡아주고
+                // if (camera instanceof THREE.Camera) {
+                //     camera.lookAt(new THREE.Vector3(Container.position.x, 10, Container.position.z));
+                // }
+
+                requestAnimationFrame(render);
+                renderer.render(scene, camera);
+                }
+
+        // 자동차 조립
+        function Car () {
+            var Car = new THREE.Group();
+
+            var backWheel = new THREE.Mesh( 
+                new THREE.BoxGeometry(12,33,12), new THREE.MeshLambertMaterial({color:0x333333}))
+                backWheel.position.z = 6;
+                backWheel.position.x = -18;
+                Car.add(backWheel);
+
+            var frontWheel = new THREE.Mesh(
+                new THREE.BoxGeometry(12,33,12), new THREE.MeshLambertMaterial({color:0x333333}))
+                frontWheel.position.z = 6;
+                frontWheel.position.x = 18;
+                Car.add(frontWheel);
+
+            var mainbody = new THREE.Mesh(
+                new THREE.BoxGeometry(60,40,15),
+                new THREE.MeshLambertMaterial({color:0xa52523})
+            )
+                mainbody.position.z = 12;
+                Car.add(mainbody)
+
+        
+            var cabinMaterial = [
+                new THREE.MeshLambertMaterial({ color: 0xffffff }),
+                new THREE.MeshLambertMaterial({ color: 0xffffff }),
+                new THREE.MeshLambertMaterial({ color: 0xffffff }),
+                new THREE.MeshLambertMaterial({ color: 0xffffff }),
+                new THREE.MeshLambertMaterial({ color: 0xffffff }), // top
+                new THREE.MeshLambertMaterial({ color: 0xffffff }) // bottom
+            ]
+            var cabin = new THREE.SceneUtils.createMultiMaterialObject(new THREE.BoxGeometry(33, 24, 12),cabinMaterial );
+            cabin.position.x = -6;
+            cabin.position.z = 25.5;
+            Car.add(cabin);
+
+            // 이 센터 점은, 굳이 없어도 되나... 1인칭과의 통일성 위해서 삭제하지 않음
+            var centerVerticesMaterial = new THREE.SpriteMaterial({color:0xff0000});
+            var centerVertices = new THREE.Sprite(centerVerticesMaterial);
+            centerVertices.position.set(0,0,0);
+            Car.add(centerVertices);
+            return Car;    
+        }
+    }
+    window.onload = init
+</script>
+</body>
+</html>

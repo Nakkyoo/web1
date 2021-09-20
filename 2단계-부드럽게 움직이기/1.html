@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>Example 02.07 - Cameras</title>
+    <script type="text/javascript" src="../libs/three.js"></script>
+    <script type="text/javascript" src="../libs/OrbitControls.js"></script>
+    <script type="text/javascript" src="../libs/stats.js"></script>
+    <script type="text/javascript" src="../libs/dat.gui.js"></script>
+    <script type="text/javascript" src="../libs/tween.min.js"></script>
+<!-- tweenjs를 사용해볼까 -->
+    <style> 
+        body {
+            /* set margin to 0 and overflow to hidden, to go fullscreen */
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <input type="number"; id="positionx" onkeyup="if(window.event.keyCode==13){inputPositionX()}"; value = "원하는x포지션"/>
+    <input type="number"; id="positionz" onkeyup="if(window.event.keyCode==13){inputPositionZ()}"; value = "원하는z포지션"/>
+
+<div id="Stats-output">
+</div>
+<!-- Div which will hold the Output -->
+<div id="WebGL-output">
+</div>
+
+<!-- Javascript code that runs our Three.js examples -->
+<script type="text/javascript">
+var orbit; 
+var rcCar;
+var rotationSpeed;
+var Container;
+var positionX;
+var positionZ;
+var pastPositionX = 0 ;
+var pastPositionZ = 0 ;
+var velocityX = 10;
+var velocityZ = 10;
+
+function inputPositionX(){
+    if (positionX){
+        pastPositionX = positionX;
+        console.log(pastPositionX+"=pastpositionx");
+        positionX = document.getElementById('positionx').value;
+    }
+    else if (!positionX){
+    positionX = document.getElementById('positionx').value;
+    console.log(positionX)
+    }
+}
+function inputPositionZ(){
+    if (positionZ){
+        pastPositionZ = positionZ;
+        console.log(pastPositionZ+"=pastpositionz");
+        positionZ = document.getElementById('positionz').value;
+    }
+    else if (!positionZ){
+    positionZ = document.getElementById('positionz').value;
+    console.log(positionZ)
+    }
+}
+
+// const tweenX = new THWEEN.Tween({ x:0})
+
+    // once everything is loaded, we run our Three.js stuff.
+    function init() {
+
+        // create a scene, that will hold all our elements such as objects, cameras and lights.
+        var scene = new THREE.Scene();
+
+        // create a camera, which defines where we're looking at.
+        var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100000);
+        camera.position.x = 12000;
+        camera.position.y = 6000;
+        camera.position.z = 18000;
+
+        // create a render and set the size
+        var renderer = new THREE.WebGLRenderer();
+        renderer.setClearColor(new THREE.Color(0xEEEEEE, 1.0));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // create the ground plane
+        var planeGeometry = new THREE.PlaneGeometry(10000, 17000);
+        var planeMaterial = new THREE.MeshLambertMaterial({color: 0xffffff});
+        var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+
+
+        // rotate and position the plane
+        plane.rotation.x = -0.5 * Math.PI;
+        plane.position.x = 0;
+        plane.position.y = 0;
+        plane.position.z = 0;
+
+        // add the plane to the scene
+        scene.add(plane);
+
+        var northWallGeometry = new THREE.BoxGeometry(10000,1000,1000)
+        var northWallMaterial = new THREE.MeshBasicMaterial({color:0xff0110});
+        var northWall = new THREE.Mesh(northWallGeometry,northWallMaterial);
+        northWall.rotation.x = -0.5 * Math.PI;
+        northWall.position.z = 9000;
+        northWall.position.y = 500;
+
+        scene.add(northWall)
+
+            var southWallGeometry = new THREE.BoxGeometry(10000,1000,1000)
+            var southWallMaterial = new THREE.MeshBasicMaterial({color:0x960ff});
+            var southWall = new THREE.Mesh(southWallGeometry,southWallMaterial);
+            southWall.rotation.x = -0.5 * Math.PI;
+            southWall.position.z = -9000;
+            southWall.position.y = 500;
+
+            scene.add(southWall)
+
+            var westWallGeometry = new THREE.BoxGeometry(1000,19000,1000)
+            var westWallMaterial = new THREE.MeshBasicMaterial({color:0x00000});
+            var westWall = new THREE.Mesh(westWallGeometry,westWallMaterial);
+            westWall.rotation.x = -0.5 * Math.PI;
+            westWall.position.z = 0;
+            westWall.position.y = 500;
+            westWall.position.x = 5500;
+
+            scene.add(westWall)
+
+            var eastWallGeometry = new THREE.BoxGeometry(1000,19000,1000)
+            var eastWallMaterial = new THREE.MeshBasicMaterial({color:0x66ff00});
+            var eastWall = new THREE.Mesh(eastWallGeometry,eastWallMaterial);
+            eastWall.rotation.x = -0.5 * Math.PI;
+            eastWall.position.z = 0;
+            eastWall.position.y = 500;
+            eastWall.position.x = -5500;
+
+            scene.add(eastWall)
+
+
+            var LAB1Geometry = new THREE.BoxGeometry(6000,4000,1000)
+            var LAB1Material = new THREE.MeshLambertMaterial();
+            var LAB1 = new THREE.Mesh(LAB1Geometry,LAB1Material);
+            LAB1.rotation.x = -0.5 * Math.PI;
+            LAB1.position.z = 6500;
+            LAB1.position.y = 500;
+
+            scene.add(LAB1)
+
+            var LAB2 = new THREE.Mesh(LAB1Geometry,LAB1Material);
+            LAB2.rotation.x = -0.5 * Math.PI;
+            LAB2.position.z = -6500;
+            LAB2.position.y = 500;
+            scene.add(LAB2)
+
+            var Elevator1Geometry = new THREE.BoxGeometry(1500,5000,1000)
+            var Elevator1 = new THREE.Mesh( Elevator1Geometry,LAB1Material);
+            Elevator1.rotation.x = -0.5 * Math.PI;
+            Elevator1.position.x = -2200;
+            Elevator1.position.y = 500;
+            scene.add(Elevator1)
+
+            var Elevator2 = new THREE.Mesh( Elevator1Geometry,LAB1Material);
+            Elevator2.rotation.x = -0.5 * Math.PI;
+            Elevator2.position.x = 2200;
+            Elevator2.position.y = 500;
+            scene.add(Elevator2)
+
+
+        var directionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
+        directionalLight.position.set(-20, 40, 60);
+        scene.add(directionalLight);
+
+
+        // add subtle ambient lighting
+        var ambientLight = new THREE.AmbientLight(0x292929);
+        scene.add(ambientLight);
+
+        // var tweenX = new TWEEN.Tween({x:pastPositionX,y:0,z:pastPositionZ}).to({x:positionX,y:0,z:pastPositionZ},4000)        
+        // tweenX.onUpdate(function (object = {
+        //     x: number,
+        //     y:number,
+        //     z:number
+
+        // }, elapsed: number;){})
+            var tweenX = new TWEEN.Tween({x:pastPositionX,y:0,z:pastPositionZ}).to({x:positionX,y:0, z:positionZ },4000)
+
+            // add the output of the renderer to the html element
+        document.getElementById("WebGL-output").appendChild(renderer.domElement);
+
+        // call the render function
+
+        var controls = new function () {
+            this.perspective = "Perspective";
+            this.switchCamera = function () {
+                if (camera instanceof THREE.PerspectiveCamera) {
+                    camera = new THREE.OrthographicCamera(window.innerWidth / -16, window.innerWidth / 16, window.innerHeight / 16, window.innerHeight / -16, -200, 50000);
+                    camera.position.x = 120;
+                    camera.position.y = 60;
+                    camera.position.z = 180;
+                    camera.lookAt(rcCar);
+                    orbit = new THREE.OrbitControls(camera, renderer.domElement);
+                    this.perspective = "Orthographic";
+                } else {
+                    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100000);
+                    camera.position.x = 120;
+                    camera.position.y = 60;
+                    camera.position.z = 180;
+
+                    camera.lookAt(rcCar);
+                    this.perspective = "Perspective";
+                    orbit = new THREE.OrbitControls(camera, renderer.domElement);
+                }
+            };
+        };
+
+        var gui = new dat.GUI();
+        gui.add(controls, 'switchCamera');
+        gui.add(controls, 'perspective').listen();
+
+        camera.lookAt(scene.position);
+        orbit = new THREE.OrbitControls(camera, renderer.domElement);
+
+        Container = new THREE.Object3D();
+        rcCar = Car();
+        rcCar.rotation.x = -0.5 * Math.PI;
+
+        Container.add(rcCar);
+        scene.add(Container);
+
+        var rcCar2 = Car();
+        Container.add(rcCar2);
+        scene.add(Container);
+
+
+        var sceneAxes = new THREE.AxisHelper(800);
+
+        sceneAxes.position.x = -800
+        scene.add(sceneAxes);
+
+        var containerAxes = new THREE.AxisHelper(300);
+        containerAxes.position.y = 300
+        Container.add(containerAxes);
+
+        var rcCarAxes = new THREE.AxisHelper(100);
+        rcCarAxes.position.z = 100;
+        rcCar.add(rcCarAxes);
+        rcCar.position.x = 100;
+
+        rightTurn();
+        render();
+
+        function render() {
+            
+            orbit.update();
+
+            if (positionX){
+            Container.position.x = positionX;
+                console.log('0')
+        }
+
+            if (positionZ){
+            Container.position.z = positionZ;
+                console.log('1')
+        }
+                
+            requestAnimationFrame(render);
+            renderer.render(scene, camera);
+            
+        }
+
+        function Car () {
+            var Car = new THREE.Group();
+
+            var backWheel = new THREE.Mesh( 
+                new THREE.BoxGeometry(12,33,12), new THREE.MeshLambertMaterial({color:0x333333}))
+
+            backWheel.position.z = 6;
+            backWheel.position.x = -18;
+            Car.add(backWheel);
+
+            var frontWheel = new THREE.Mesh(
+                new THREE.BoxGeometry(12,33,12), new THREE.MeshLambertMaterial({color:0x333333}))
+            frontWheel.position.z = 6;
+            frontWheel.position.x = 18;
+            Car.add(frontWheel);
+
+            var mainbody = new THREE.Mesh(
+                new THREE.BoxGeometry(60,30,15),
+                new THREE.MeshLambertMaterial({color:0xa52523})
+            )
+            mainbody.position.z = 12;
+            Car.add(mainbody)
+
+        
+            var cabinMaterial = [
+            new THREE.MeshLambertMaterial({ color: 0xffffff }),
+            new THREE.MeshLambertMaterial({ color: 0xffffff }),
+            new THREE.MeshLambertMaterial({ color: 0xffffff }),
+            new THREE.MeshLambertMaterial({ color: 0xffffff }),
+            new THREE.MeshLambertMaterial({ color: 0xffffff }), // top
+            new THREE.MeshLambertMaterial({ color: 0xffffff }) // bottom
+            ]
+
+            const cabin = new THREE.SceneUtils.createMultiMaterialObject(new THREE.BoxGeometry(33, 24, 12),cabinMaterial );
+
+            cabin.position.x = -6;
+            cabin.position.z = 25.5;
+            Car.add(cabin);
+
+            var centerVerticesMaterial = new THREE.SpriteMaterial({color:0xff0000});
+            var centerVertices = new THREE.Sprite(centerVerticesMaterial);
+            centerVertices.position.set(0,0,0);
+            Car.add(centerVertices);
+
+            var firstVerticesMaterial = new THREE.SpriteMaterial({color:0x0096ff}); //파란색!
+            var firstVertices = new THREE.Sprite(firstVerticesMaterial);
+            firstVertices.position.set(120,120,0);
+            Car.add(firstVertices);
+
+            var secondVerticesMaterial = new THREE.SpriteMaterial({color:0x66ff00}); //녹색!
+            var secondVertices = new THREE.Sprite(secondVerticesMaterial);
+            secondVertices.position.set(120,-120,0);
+            Car.add(secondVertices);
+
+            var thirdVerticesMaterial = new THREE.SpriteMaterial({color:0xff007f}); // 분홍색!
+            var thirdVertices = new THREE.Sprite(thirdVerticesMaterial);
+            thirdVertices.position.set(-120,120,0);
+            Car.add(thirdVertices);
+
+            var fourthVerticesMaterial = new THREE.SpriteMaterial({color:0xffaa1d}); // 노란색!
+            var fourthVertices = new THREE.Sprite(fourthVerticesMaterial);
+            fourthVertices.position.set(-120,-120,0);
+            Car.add(fourthVertices);
+
+
+            return Car;    
+        }
+
+        function rightTurn (){
+            rotationSpeed = 0.0175;
+            setTimeout(function(){
+                rotationSpeed = 0;
+            },1500)
+        }
+
+
+    }
+    window.onload = init
+
+
+</script>
+</body>
+</html>
