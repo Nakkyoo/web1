@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>1인칭 Cameras</title>
+    <script type="text/javascript" src="../libs/three.js"></script>
+    <script type="text/javascript" src="../libs/OrbitControls.js"></script>
+    <script type="text/javascript" src="../libs/dat.gui.js"></script>
+    <script src="jquery-3.6.0.min.js"></script>
+    <script src="building.js"></script>
+    <script src="light.js"></script>
+    <script src="../libs/OBJLoader.js"></script>
+    <script src="../libs/MTLLoader.js"></script>
+
+    <style> 
+        body {
+            /* set margin to 0 and overflow to hidden, to go fullscreen */
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+    <script>
+        var settings = {
+            "url": "http://203.253.128.161:7579/Mobius/boongx2/data/la",
+            "method": "GET",
+            "timeout": 0,
+            "headers": {
+                "Accept": "application/json",
+                "X-M2M-RI": "12345",
+                "X-M2M-Origin": "SOrigin"
+            },
+        };
+    </script>
+
+</head>
+<body>
+
+    <!-- Div which will hold the Output -->
+    <div id="WebGL-output">
+    </div>
+
+    <script type="text/javascript">
+        var scene;
+        var dataX;
+        var past1DataX;
+        var past2DataX;
+        var past3DataX;
+        var past4DataX;
+        var dataZ;
+        var past1DataZ;
+        var past2DataZ;
+        var past3DataZ;
+        var past4DataZ;
+        var regex = /[^0-9]/g;	
+        var orbit; 
+        var rcCar;
+        var rotationSpeed = 0;
+        var rotationSpeed2 = 0;
+        var container;
+        var containerForCamera;
+        var velocityX =0.9;
+        var velocityZ =0.9;
+        var loaderOBJ = new THREE.OBJLoader();
+        var mtlLoader = new THREE.MTLLoader();
+        var mesh;
+        var camera;
+        function download(){
+            $.ajax(settings).done(function (response) {
+                if(past2DataX)past3DataX = past2DataX;
+                if(past2DataZ)past3DataZ = past2DataZ;
+                if(past1DataX)past2DataX = past1DataX;
+                if(past1DataZ)past2DataZ = past1DataZ;
+                past1DataX = dataX;
+                past1DataZ = dataZ;
+
+                dataX = response['m2m:cin'].con.split(',')[0].replace(regex, "");;
+                dataZ = response['m2m:cin'].con.split(',')[1].replace(regex, "");;
+                dataX = dataX*2;
+                dataZ = dataZ*2;
+                console.log(dataX,dataZ)
+            })
+        ;}
+        setInterval(download,380);
+
+        function leftTurn (){
+                    rotationSpeed = 0.06545;
+                    setTimeout(function(){
+                        rotationSpeed = 0;
+                        Container.rotation.y = Math.PI * 0.5;
+                    },380); //1480에서 더 세밀하게 조율 들어가면 좋겠당..
+        };
+
+        function leftTurn2 (){
+                    rotationSpeed = 0.06545;
+                    setTimeout(function(){
+                        rotationSpeed = 0;
+                        Container.rotation.y = Math.PI; 
+                    },380); //1480에서 더 세밀하게 조율 들어가면 좋겠당..
+        };
+
+        function leftTurn3 (){
+                    rotationSpeed = 0.06545;
+                    setTimeout(function(){
+                        rotationSpeed = 0;
+                        Container.rotation.y = Math.PI * 1.5;
+                    },380); //1480에서 더 세밀하게 조율 들어가면 좋겠당..
+        };
+
+        function leftTurn4 (){
+                    rotationSpeed = 0.06545;
+                    setTimeout(function(){
+                        rotationSpeed = 0;
+                        Container.rotation.y = 0;
+                    },380); //1480에서 더 세밀하게 조율 들어가면 좋겠당..
+        };
+
+        function rightTurn (){
+            rotationSpeed = -0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = Math.PI * 0.5;
+            },380);
+        };
+
+        function rightTurn2 (){
+            rotationSpeed = -0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = Math.PI;
+            },380);
+        };
+
+        function rightTurn3 (){
+            rotationSpeed = -0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = Math.PI * 1.5;
+            },380);
+        };
+        function rightTurn4 (){
+            rotationSpeed = -0.06545;
+            Container.rotation.y =Container.rotation.y + rotationSpeed;
+            setTimeout(function(){
+                rotationSpeed = 0;
+                Container.rotation.y = 0;
+            },380);
+        };
+/////////////////////// for camera//////////////////////////
+
+        function cleftTurn (){
+            rotationSpeed2 = 0.03273;
+            setTimeout(function(){
+                rotationSpeed2 = 0;
+                containerForCamera.rotation.y = Math.PI * 0.5;},760); 
+        };
+
+        function cleftTurn2 (){
+            rotationSpeed2 = 0.03273;
+            setTimeout(function(){
+                rotationSpeed2 = 0;
+                containerForCamera.rotation.y = Math.PI; },760); 
+        };
+
+        function cleftTurn3 (){
+            rotationSpeed2 = 0.03273;
+            setTimeout(function(){
+                rotationSpeed2 = 0;
+                containerForCamera.rotation.y = Math.PI * 1.5;},760); 
+        };
+
+        function cleftTurn4 (){
+            rotationSpeed2 = 0.03273;
+            setTimeout(function(){
+                rotationSpeed2 = 0;
+                containerForCamera.rotation.y = 0;},760); 
+        };
+
+        function crightTurn (){
+            rotationSpeed2 = -0.03273;
+            setTimeout(function(){
+                rotationSpeed2 = 0;
+                containerForCamera.rotation.y = Math.PI * 0.5;},760);
+        };
+
+        function crightTurn2 (){
+            rotationSpeed2 = -0.03273;
+            setTimeout(function(){
+                rotationSpeed2 = 0;
+                containerForCamera.rotation.y = Math.PI;},760);
+        };
+
+        function crightTurn3 (){
+            rotationSpeed2 = -0.03273;
+            setTimeout(function(){
+                rotationSpeed2 = 0;
+                containerForCamera.rotation.y = Math.PI * 1.5;},760);
+        };
+
+        function crightTurn4 (){
+            rotationSpeed2 = -0.03273;
+            setTimeout(function(){
+                rotationSpeed2 = 0;
+                containerForCamera.rotation.y = 0;},760);
+        };
+
+        function init() {
+
+            // 기본적인 scene 넣구
+            scene = new THREE.Scene();
+
+            // renederer 넣고
+            var renderer = new THREE.WebGLRenderer();
+            renderer.setClearColor(new THREE.Color(0x000000, 1.0));
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            mapping();
+            elevatorMap();
+            setLight();
+        
+            // 1인칭 카메라 위치 잡아주고
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100000);
+            camera.position.set(0,462.9050463104533,-250);
+
+            containerForCamera = new THREE.Object3D();
+            containerForCamera.add(camera);
+            scene.add(containerForCamera);
+
+            // 오르빗 시스템 돌리고
+            orbit = new THREE.OrbitControls(camera, renderer.domElement);
+
+            //THREE.OBJLoader 인스턴스를 만들어서 loadOBJ변수에 할당하고
+            loaderOBJ = new THREE.OBJLoader();
+            Container = new THREE.Object3D();
+
+            // 이 축은 실제 트라이 때 지울 것
+            // var axes = new THREE.AxisHelper(1000);
+            // Container.add(axes);
+
+            loaderOBJ.load('uploads_files_2792345_Koenigsegg.obj',
+            function ( obj ){
+                obj.children.forEach(function (child) {
+                    var material = new THREE.MeshPhongMaterial({color: 0xf76565});
+                    child.material = material;
+                });
+
+                mesh = obj;
+                // 앞서 선언한 mesh 변수에 obj인자를 할당하여 함수가 끝난 이후에도 Object3D를 찾아갈 수 있는 방법을마련
+                obj.scale.set(4,4,4);
+                obj.position.set(0,0,0);
+                obj.rotation.set(0, 0, 0); 
+                Container.add(obj);
+            }
+            );
+            scene.add(Container);
+            // add the output of the renderer to the html element
+            document.getElementById("WebGL-output").appendChild(renderer.domElement);
+            render();
+
+            function render() {
+                orbit.update();
+                if(dataX > Container.position.x){
+                    Container.position.x += velocityX;
+                    if(Container.rotation.y ==0)leftTurn();
+                    if(Container.rotation.y == Math.PI)rightTurn();
+                }
+                else if(dataX < Container.position.x){
+                    Container.position.x -= velocityX;
+                    if(Container.rotation.y == Math.PI)leftTurn3();
+                    if(Container.rotation.y == 0)rightTurn3();
+                }
+                if(dataZ > Container.position.z){
+                    Container.position.z += velocityZ;
+                    if(Container.rotation.y == Math.PI*1.5)leftTurn4();
+                    if(Container.rotation.y == Math.PI*0.5)rightTurn4();
+                }
+                else if(dataZ < Container.position.z){
+                    Container.position.z -= velocityZ;
+                    if(Container.rotation.y == Math.PI*0.5)leftTurn2();
+                    if(Container.rotation.y == Math.PI*1.5)rightTurn2();
+                }
+                if(rotationSpeed){
+                    Container.rotation.y += rotationSpeed;
+                }
+                // cctv 처럼 카메라 포커스 잡아주고
+
+                ///////////////////////////////////////
+
+                if(past3DataX > containerForCamera.position.x){
+                    containerForCamera.position.x += velocityX;
+                    if(containerForCamera.rotation.y ==0)cleftTurn();
+                    if(containerForCamera.rotation.y == Math.PI)crightTurn();
+                    // if(containerForCamera.rotation.y == Math.PI*1.5)cturnAround2();
+                }
+                else if(past3DataX < containerForCamera.position.x){
+                    containerForCamera.position.x -= velocityX;
+                    if(containerForCamera.rotation.y == Math.PI)cleftTurn3();
+                    if(containerForCamera.rotation.y == 0)crightTurn3();
+                    // if(containerForCamera.rotation.y == Math.PI*0.5)cturnAround4();
+                }
+                if(past3DataZ > containerForCamera.position.z){
+                    containerForCamera.position.z += velocityZ;
+                    if(containerForCamera.rotation.y == Math.PI*1.5)cleftTurn4();
+                    if(containerForCamera.rotation.y == Math.PI*0.5)crightTurn4();
+                    // if(containerForCamera.rotation.y == Math.PI)cturnAround();
+                }
+                else if(past3DataZ < containerForCamera.position.z){
+                    containerForCamera.position.z -= velocityZ;
+                    if(containerForCamera.rotation.y == Math.PI*0.5)cleftTurn2();
+                    if(containerForCamera.rotation.y == Math.PI*1.5)crightTurn2();
+                    // if(containerForCamera.rotation.y == 0)cturnAround3();
+                }
+                if(rotationSpeed2){
+                    containerForCamera.rotation.y += rotationSpeed2;
+                }
+
+                //  if (camera instanceof THREE.Camera) {
+                //     //  camera.lookAt(new THREE.Vector3(rcCar.position.x, 0, rcCar.position.z));
+                // }
+                requestAnimationFrame(render);
+                renderer.render(scene, camera);
+                }
+
+        }
+    
+    window.onload = init
+</script>
+</body>
+</html>
